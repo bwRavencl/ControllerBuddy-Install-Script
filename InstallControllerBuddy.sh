@@ -73,5 +73,5 @@ fi
 if [ "$RESTART" = true ]
 then
     echo -e '\nLaunching ControllerBuddy...\n'
-    "$CB_EXE_PATH" $CB_ARGUMENTS &
+    start //B "" "$CB_EXE_PATH" $CB_ARGUMENTS &
 fi
