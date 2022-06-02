@@ -25,6 +25,7 @@ cat << 'EOF'
                                                            /___/
 
                                         © 2022 Matteo Hausner
+
 EOF
 
 LOG_FILE="$TMP\\InstallControllerBuddy.log"
@@ -45,6 +46,12 @@ function confirm_exit() {
 if [ "$OSTYPE" != msys ]
 then
     log "Error: This script must be run in a MSYS/MinGW (Git Bash for Windows) environment"
+    confirm_exit
+fi
+
+if [ "$(arch)" != x86_64 ]
+then
+    log "Error: This script is intended to be run on x86_64 systems"
     confirm_exit
 fi
 
