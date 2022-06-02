@@ -63,7 +63,6 @@ CB_EXE=ControllerBuddy.exe
 CB_EXE_PATH="$CB_DIR\\$CB_EXE"
 CB_LNK_DIR="$APPDATA\\Microsoft\\Windows\\Start Menu\\Programs\\ControllerBuddy"
 CB_LNK_PATH="$CB_LNK_DIR\\ControllerBuddy.lnk"
-CB_PROFILES_HTTPS_REMOTE_URL=https://github.com/bwRavencl/ControllerBuddy-Profiles.git
 SCRIPT_NAME=$(basename "$0")
 SCRIPT_LNK_PATH="$CB_LNK_DIR\\Update ControllerBuddy.lnk"
 SCRIPT_PATH="$CB_DIR/$SCRIPT_NAME"
@@ -234,12 +233,11 @@ fi
 if [ ! -d "$CONTROLLER_BUDDY_PROFILE_DIR" ]
 then
     log "\nCloning ControllerBuddy-Profiles repository..."
-    git clone -o https "$CB_PROFILES_HTTPS_REMOTE_URL" "$CONTROLLER_BUDDY_PROFILE_DIR"
+    git clone https://github.com/bwRavencl/ControllerBuddy-Profiles.git "$CONTROLLER_BUDDY_PROFILE_DIR"
     check_retval "Error: Failed to clone ControllerBuddy-Profiles repository"
 else
     log "\nPulling ControllerBuddy-Profiles repository..."
-    git -C "$CONTROLLER_BUDDY_PROFILE_DIR" remote add https "$CB_PROFILES_HTTPS_REMOTE_URL" >/dev/null 2>&1 || git -C "$CONTROLLER_BUDDY_PROFILE_DIR" remote set-url https "$CB_PROFILES_HTTPS_REMOTE_URL"
-    git -C "$CONTROLLER_BUDDY_PROFILE_DIR" pull https master
+    git -C "$CONTROLLER_BUDDY_PROFILE_DIR" pull origin master
     check_retval "Error: Failed to pull ControllerBuddy-Profiles repository"
 fi
 
