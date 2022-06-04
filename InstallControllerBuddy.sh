@@ -59,6 +59,7 @@ VJOY_UNINSTALL_REGISTRY_KEY='HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\Curre
 VJOY_DESIRED_VERSION='2.1.9.1'
 PROGRAMS_DIR="$LOCALAPPDATA\\Programs"
 CB_DIR="$PROGRAMS_DIR\\ControllerBuddy"
+CB_PROFILES_DIR="$USERPROFILE\\Documents\\ControllerBuddy-Profiles"
 CB_EXE=ControllerBuddy.exe
 CB_EXE_PATH="$CB_DIR\\$CB_EXE"
 CB_LNK_DIR="$APPDATA\\Microsoft\\Windows\\Start Menu\\Programs\\ControllerBuddy"
@@ -137,9 +138,24 @@ then
 
     local EXPORT_LUA_PATH="$DCS_SCIRPTS_DIR\\Export.lua"
     log "\nUpdating $EXPORT_LUA_PATH for ControllerBuddy-DCS-Integration"
-    unix2dos -q "$EXPORT_LUA_PATH"
-    comm -13 <(sort -u "$EXPORT_LUA_PATH" 2>/dev/null) <(sort -u "$DCS_SCIRPTS_DIR\\ControllerBuddy-DCS-Integration\\Export.lua" 2>/dev/null) >> "$EXPORT_LUA_PATH" && unix2dos -q "$EXPORT_LUA_PATH"
+    local EXPORT_LUA_LINE='dofile(lfs.writedir()..[[Scripts\ControllerBuddy-DCS-Integration\ControllerBuddy.lua]])'
+    touch -a "$EXPORT_LUA_PATH"
+    grep -qxF "$EXPORT_LUA_LINE" "$EXPORT_LUA_PATH" || { sed -i '$a\' "$EXPORT_LUA_PATH" && echo "$EXPORT_LUA_LINE" >> "$EXPORT_LUA_PATH" && unix2dos -q "$EXPORT_LUA_PATH" ; }
     check_retval "Error: Failed to add ControllerBuddy-DCS-Integration to $EXPORT_LUA_PATH"
+
+    if [ -z "$CONTROLLER_BUDDY_EXECUTABLE" ]
+    then
+        log "\nAdding CONTROLLER_BUDDY_EXECUTABLE environment variable..."
+        setx CONTROLLER_BUDDY_EXECUTABLE "$CB_EXE_PATH"
+        check_retval 'Error: Failed to add CONTROLLER_BUDDY_EXECUTABLE environment variable'
+    fi
+
+    if [ -z "$CONTROLLER_BUDDY_PROFILES_DIR" ]
+    then
+        log "\nAdding CONTROLLER_BUDDY_PROFILES_DIR environment variable..."
+        setx CONTROLLER_BUDDY_PROFILES_DIR "$CB_PROFILES_DIR"
+        check_retval 'Error: Failed to add CONTROLLER_BUDDY_PROFILES_DIR environment variable'
+    fi
 fi
 }
 
@@ -244,29 +260,14 @@ then
     check_retval 'Error: Failed to create ControllerBuddy Start menu shortcut'
 fi
 
-if [ -z "$CONTROLLER_BUDDY_EXECUTABLE" ]
-then
-    log "\nAdding CONTROLLER_BUDDY_EXECUTABLE environment variable..."
-    setx CONTROLLER_BUDDY_EXECUTABLE "$CB_EXE_PATH"
-    check_retval 'Error: Failed to add CONTROLLER_BUDDY_EXECUTABLE environment variable'
-fi
-
-if [ -z "$CONTROLLER_BUDDY_PROFILE_DIR" ]
-then
-    log "\nAdding CONTROLLER_BUDDY_PROFILE_DIR environment variable..."
-    export CONTROLLER_BUDDY_PROFILE_DIR="$USERPROFILE\\Documents\\ControllerBuddy-Profiles"
-    setx CONTROLLER_BUDDY_PROFILE_DIR "$CONTROLLER_BUDDY_PROFILE_DIR"
-    check_retval 'Error: Failed to add CONTROLLER_BUDDY_PROFILE_DIR environment variable'
-fi
-
-if [ ! -d "$CONTROLLER_BUDDY_PROFILE_DIR" ]
+if [ ! -d "$CB_PROFILES_DIR" ]
 then
     log "\nCloning ControllerBuddy-Profiles repository..."
-    git clone https://github.com/bwRavencl/ControllerBuddy-Profiles.git "$CONTROLLER_BUDDY_PROFILE_DIR"
+    git clone https://github.com/bwRavencl/ControllerBuddy-Profiles.git "$CB_PROFILES_DIR"
     check_retval 'Error: Failed to clone ControllerBuddy-Profiles repository'
 else
     log "\nPulling ControllerBuddy-Profiles repository..."
-    git -C "$CONTROLLER_BUDDY_PROFILE_DIR" pull origin master
+    git -C "$CB_PROFILES_DIR" pull origin master
     check_retval 'Error: Failed to pull ControllerBuddy-Profiles repository'
 fi
 
