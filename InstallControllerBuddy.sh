@@ -66,6 +66,9 @@ CB_LNK_PATH="$CB_LNK_DIR\\ControllerBuddy.lnk"
 SCRIPT_NAME=$(basename "$0")
 SCRIPT_LNK_PATH="$CB_LNK_DIR\\Update ControllerBuddy.lnk"
 SCRIPT_PATH="$CB_DIR/$SCRIPT_NAME"
+SAVED_GAMES_DIR="$USERPROFILE\\Saved Games"
+DCS_STABLE_USER_DIR="$SAVED_GAMES_DIR\\DCS"
+DCS_OPEN_BETA_USER_DIR="$SAVED_GAMES_DIR\\DCS.openbeta"
 
 function check_retval() {
     if [ "$?" -eq 0 ]
@@ -114,6 +117,32 @@ function check_vjoy_configured() {
     fi
 }
 
+function install_dcs_integration() {
+if [ -d "$1" ]
+then
+    log "\nFound DCS World user directory $1"
+    local DCS_SCIRPTS_DIR="$1\\Scripts"
+
+    local CB_DCS_INTEGRATION_DIR="$DCS_SCIRPTS_DIR\\ControllerBuddy-DCS-Integration"
+    if [ ! -d "$CB_DCS_INTEGRATION_DIR" ]
+    then
+        log "\nCloning ControllerBuddy-DCS-Integration repository..."
+        git clone https://github.com/bwRavencl/ControllerBuddy-DCS-Integration.git "$CB_DCS_INTEGRATION_DIR"
+        check_retval 'Error: Failed to clone ControllerBuddy-DCS-Integration repository'
+    else
+        log "\nPulling ControllerBuddy-DCS-Integration repository..."
+        git -C "$CB_DCS_INTEGRATION_DIR" pull origin master
+        check_retval 'Error: Failed to pull ControllerBuddy-DCS-Integration repository'
+    fi
+
+    local EXPORT_LUA_PATH="$DCS_SCIRPTS_DIR\\Export.lua"
+    log "\nUpdating $EXPORT_LUA_PATH for ControllerBuddy-DCS-Integration"
+    unix2dos -q "$EXPORT_LUA_PATH"
+    comm -13 <(sort -u "$EXPORT_LUA_PATH" 2>/dev/null) <(sort -u "$DCS_SCIRPTS_DIR\\ControllerBuddy-DCS-Integration\\Export.lua" 2>/dev/null) >> "$EXPORT_LUA_PATH" && unix2dos -q "$EXPORT_LUA_PATH"
+    check_retval "Error: Failed to add ControllerBuddy-DCS-Integration to $EXPORT_LUA_PATH"
+fi
+}
+
 check_vjoy_installed
 if [ "$VJOY_INSTALLED" != true ]
 then
@@ -141,7 +170,7 @@ then
     else
         log "No - starting elevated vJoyConfig process..."
         powershell -Command "Start-Process '$VJOY_CONFIG_EXE_PATH' '1 -f -b 128' -Verb Runas -Wait"
-        check_retval "Error: Failed to start elevated vJoyConfig process"
+        check_retval 'Error: Failed to start elevated vJoyConfig process'
         check_vjoy_configured
         if [ "$VJOY_CONFIGURED" != true ]
         then
@@ -162,7 +191,7 @@ fi
 
 log "\nChecking for the latest ControllerBuddy release..."
 JSON=$(curl https://api.github.com/repos/bwRavencl/ControllerBuddy/releases/latest)
-check_retval "Error: Failed to obtain ControllerBuddy release information from GitHub"
+check_retval 'Error: Failed to obtain ControllerBuddy release information from GitHub'
 
 CB_LATEST_VERSION=$(grep tag_name <<< "$JSON" | cut -d : -f 2 | cut -d - -f 2,3 | tr -d \",' ')
 if [ -z "$CB_LATEST_VERSION" ]
@@ -212,14 +241,14 @@ if [ ! -f "$CB_LNK_PATH" ]
 then
     log "\nCreating ControllerBuddy Start menu shortcut..."
     mkdir -p "$CB_LNK_DIR" && create-shortcut --arguments '-autostart local -tray' --work-dir "$CB_DIR" "$CB_EXE_PATH" "$CB_LNK_PATH"
-    check_retval "Error: Failed to create ControllerBuddy Start menu shortcut"
+    check_retval 'Error: Failed to create ControllerBuddy Start menu shortcut'
 fi
 
 if [ -z "$CONTROLLER_BUDDY_EXECUTABLE" ]
 then
     log "\nAdding CONTROLLER_BUDDY_EXECUTABLE environment variable..."
     setx CONTROLLER_BUDDY_EXECUTABLE "$CB_EXE_PATH"
-    check_retval "Error: Failed to add CONTROLLER_BUDDY_EXECUTABLE environment variable"
+    check_retval 'Error: Failed to add CONTROLLER_BUDDY_EXECUTABLE environment variable'
 fi
 
 if [ -z "$CONTROLLER_BUDDY_PROFILE_DIR" ]
@@ -227,19 +256,22 @@ then
     log "\nAdding CONTROLLER_BUDDY_PROFILE_DIR environment variable..."
     export CONTROLLER_BUDDY_PROFILE_DIR="$USERPROFILE\\Documents\\ControllerBuddy-Profiles"
     setx CONTROLLER_BUDDY_PROFILE_DIR "$CONTROLLER_BUDDY_PROFILE_DIR"
-    check_retval "Error: Failed to add CONTROLLER_BUDDY_PROFILE_DIR environment variable"
+    check_retval 'Error: Failed to add CONTROLLER_BUDDY_PROFILE_DIR environment variable'
 fi
 
 if [ ! -d "$CONTROLLER_BUDDY_PROFILE_DIR" ]
 then
     log "\nCloning ControllerBuddy-Profiles repository..."
     git clone https://github.com/bwRavencl/ControllerBuddy-Profiles.git "$CONTROLLER_BUDDY_PROFILE_DIR"
-    check_retval "Error: Failed to clone ControllerBuddy-Profiles repository"
+    check_retval 'Error: Failed to clone ControllerBuddy-Profiles repository'
 else
     log "\nPulling ControllerBuddy-Profiles repository..."
     git -C "$CONTROLLER_BUDDY_PROFILE_DIR" pull origin master
-    check_retval "Error: Failed to pull ControllerBuddy-Profiles repository"
+    check_retval 'Error: Failed to pull ControllerBuddy-Profiles repository'
 fi
+
+install_dcs_integration "$DCS_STABLE_USER_DIR"
+install_dcs_integration "$DCS_OPEN_BETA_USER_DIR"
 
 if [ ! "$(dirname "$0")" -ef "$CB_DIR" ]
 then

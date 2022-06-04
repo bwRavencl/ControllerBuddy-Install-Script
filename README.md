@@ -13,7 +13,8 @@ It performs the following tasks:
   - `ControllerBuddy` (launches ControllerBuddy with arguments: `-autostart local -tray`)
   - `Update ControllerBuddy` (performs the same steps as if you would run `InstallControllerBuddy.sh`)
 - Ensures you have the latest version of the official [ControllerBuddy-Profiles](https://github.com/bwRavencl/ControllerBuddy-Profiles) installed into your user's `Documents` folder
-- Creates the `%CONTROLLER_BUDDY_PROFILE_DIR%` and `%CONTROLLER_BUDDY_EXECUTABLE%` environment variables (required for [ControllerBuddy-DCS-Integration](https://github.com/bwRavencl/ControllerBuddy-DCS-Integration))
+- Creates the `%CONTROLLER_BUDDY_PROFILE_DIR%` and `%CONTROLLER_BUDDY_EXECUTABLE%` environment variables
+- Sets up [ControllerBuddy-DCS-Integration](https://github.com/bwRavencl/ControllerBuddy-DCS-Integration) if [DCS World](https://www.digitalcombatsimulator.com) (Stable or OpenBeta) is present
 - When updating: stops and relaunches ControllerBuddy (with arguments: `-autostart local -tray`) after updating is completed
 
 #### Requirements:
