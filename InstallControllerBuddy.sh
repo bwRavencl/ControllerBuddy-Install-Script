@@ -45,7 +45,7 @@ function confirm_exit() {
 
 if [ "$OSTYPE" != msys ]
 then
-    log "Error: This script must be run in a MSYS/MinGW (Git Bash for Windows) environment"
+    log "Error: This script must be run in a Git Bash for Windows environment"
     confirm_exit
 fi
 
