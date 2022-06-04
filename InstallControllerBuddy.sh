@@ -115,7 +115,6 @@ function check_vjoy_configured() {
 }
 
 check_vjoy_installed
-
 if [ "$VJOY_INSTALLED" != true ]
 then
     log "No valid vJoy $VJOY_DESIRED_VERSION installation was found - downloading installer..."
@@ -158,6 +157,7 @@ fi
 if [ -d "$CB_DIR" ]
 then
     CB_CURRENT_VERSION=$(find "$CB_DIR"/app/ControllerBuddy-*.jar -maxdepth 1 -print0 2>/dev/null | xargs -0 -I filename basename -s .jar filename | cut -d - -f 2,3)
+    AUTO_EXIT=true
 fi
 
 log "\nChecking for the latest ControllerBuddy release..."
@@ -262,8 +262,14 @@ then
 fi
 
 log "\nAll done! Have a nice day!"
-for i in $(seq 5 -1 1)
-do
-    echo -ne "\rExiting in $i second(s)..."
-    sleep 1
-done
+
+if [ "$AUTO_EXIT" = true ]
+then
+    for i in $(seq 5 -1 1)
+    do
+        echo -ne "\rExiting in $i second(s)..."
+        sleep 1
+    done
+else
+    confirm_exit
+fi
