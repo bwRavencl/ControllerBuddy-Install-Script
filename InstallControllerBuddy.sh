@@ -178,7 +178,7 @@ fi
 
 if [ "$VJOY_INSTALLED" = true ]
 then
-    log 'Found vJoy $VJOY_CURRENT_VERSION in $VJOY_DIR'
+    log "Found vJoy $VJOY_CURRENT_VERSION in $VJOY_DIR"
     check_vjoy_configured
     if [ "$VJOY_CONFIGURED" = true ]
     then
