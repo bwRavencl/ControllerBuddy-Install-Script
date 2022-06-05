@@ -223,7 +223,7 @@ then
 else
     log "Downloading ControllerBuddy $CB_LATEST_VERSION..."
     CB_ZIP_FILE="$TMP\\ControllerBuddy.zip"
-    grep browser_download_url <<< "$JSON" | grep windows | cut -d : -f 2,3 | tr -d \",' ' | xargs -n 1 curl -o "$CB_ZIP_FILE" -L
+    grep browser_download_url <<< "$JSON" | grep windows-x86-64 | cut -d : -f 2,3 | tr -d \",' ' | xargs -n 1 curl -o "$CB_ZIP_FILE" -L
     check_retval "Error: Failed to obtain ControllerBuddy $CB_LATEST_VERSION from GitHub"
 
     if [ -d "$CB_DIR" ]
