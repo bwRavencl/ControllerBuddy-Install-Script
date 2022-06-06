@@ -12,6 +12,7 @@ It performs the following tasks:
 - If missing creates the following Start menu shortcuts:
   - `ControllerBuddy` (launches ControllerBuddy with arguments: `-autostart local -tray`)
   - `Update ControllerBuddy` (performs the same steps as if you would run `InstallControllerBuddy.sh`)
+  - `Uninstall ControllerBuddy` (removes ControllerBuddy (except the ControllerBuddy-Profiles repository by launching `InstallControllerBuddy.sh uninstall`)
 - Ensures you have the latest version of the official [ControllerBuddy-Profiles](https://github.com/bwRavencl/ControllerBuddy-Profiles) installed into your user's `Documents` folder
 - Sets up [ControllerBuddy-DCS-Integration](https://github.com/bwRavencl/ControllerBuddy-DCS-Integration) if [DCS World](https://www.digitalcombatsimulator.com) (Stable or OpenBeta) is present
 - When updating: stops and relaunches ControllerBuddy (with arguments: `-autostart local -tray`) after updating is completed
@@ -26,3 +27,4 @@ It performs the following tasks:
 3. Double click the downloaded file `InstallControllerBuddy.sh` to start installing / updating
 4. Regularly launch `Update ControllerBuddy` from the Start menu to receive the latest updates for ControllerBuddy and the ControllerBuddy-Profiles
 5. You may also want to come back to this page from time to time to get the updated versions of `InstallControllerBuddy.sh`
+6. If you would like to remove ControllerBuddy from your system run `Uninstall ControllerBuddy` from the Start menu
