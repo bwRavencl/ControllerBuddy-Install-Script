@@ -25,6 +25,6 @@ It performs the following tasks:
 1. Make sure you have installed [Git for Windows](https://git-scm.com/download/win) first (if unsure use the default options during installation)
 2. Right click and select *Save link as* [here](https://raw.githubusercontent.com/bwRavencl/ControllerBuddy-Install-Script/master/InstallControllerBuddy.sh) to download `InstallControllerBuddy.sh`
 3. Double click the downloaded file `InstallControllerBuddy.sh` to start installing / updating
-4. Regularly launch `Update ControllerBuddy` from the Start menu to receive the latest updates for ControllerBuddy and the ControllerBuddy-Profiles
+4. Regularly launch `Update ControllerBuddy` from the Start menu to receive latest updates for ControllerBuddy and the ControllerBuddy-Profiles
 5. You may also want to come back to this page from time to time to get the updated versions of `InstallControllerBuddy.sh`
 6. If you would like to remove ControllerBuddy from your system run `Uninstall ControllerBuddy` from the Start menu
