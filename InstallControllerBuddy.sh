@@ -45,7 +45,7 @@ function confirm_exit() {
     then
         log 'IMPORTANT: System configuration has been modified. Please reboot your system!'
     fi
-    read -r -p 'Press enter to exit'
+    read -rp 'Press enter to exit'
     exit 1
 }
 
@@ -85,8 +85,9 @@ case "$OSTYPE" in
         CB_SHORTCUTS_DIR="$HOME/.local/share/applications/ControllerBuddy"
         ;;
      *)
-    log 'Error: This script must be run in a Git Bash for Windows or GNU/Linux Bash environment'
-    confirm_exit
+        log 'Error: This script must either be run in a Git Bash for Windows or a GNU/Linux Bash environment'
+        confirm_exit
+        ;;
 esac
 
 rm -rf "$LOG_FILE"
@@ -285,19 +286,34 @@ fi
 
 if [ "$UNINSTALL" = true ]
 then
-    remove_controller_buddy
+    while true;
+    do
+        read -rp 'Are you sure you want to uninstall ControllerBuddy? [y/N] ' RESPONSE
+        case $RESPONSE in
+            [Yy]*)
+                remove_controller_buddy
 
-    if [ -d "$CB_SHORTCUTS_DIR" ]
-    then
-        log 'Removing ControllerBuddy shortcuts...'
-        rm -rf "$CB_SHORTCUTS_DIR"
-        check_retval 'Error: Failed to remove ControllerBuddy shortcuts'
-    fi
+                if [ -d "$CB_SHORTCUTS_DIR" ]
+                then
+                    log 'Removing ControllerBuddy shortcuts...'
+                    rm -rf "$CB_SHORTCUTS_DIR"
+                    check_retval 'Error: Failed to remove ControllerBuddy shortcuts'
+                fi
 
-    install_dcs_integration "$DCS_STABLE_USER_DIR" uninstall
-    install_dcs_integration "$DCS_OPEN_BETA_USER_DIR" uninstall
+                install_dcs_integration "$DCS_STABLE_USER_DIR" uninstall
+                install_dcs_integration "$DCS_OPEN_BETA_USER_DIR" uninstall
 
-    rm -rf "$CB_DIR" 2>/dev/null
+                rm -rf "$CB_DIR" 2>/dev/null
+                ;;
+            [Nn]* | '')
+                log 'Bye-bye!'
+                exit 0
+                ;;
+            *)
+                log "Invalid input. Please answer with 'yes' or 'no'."
+                ;;
+        esac
+    done
 else
     if [ "$OSTYPE" = msys ]
     then
@@ -337,7 +353,7 @@ else
                 fi
             fi
         else
-            log "Error: Still failed to find vJoy $VJOY_DESIRED_VERSION, please restart this script after downloading and installing vJoy $VJOY_DESIRED_VERSION manually"
+            log "Error: Still failed to find vJoy $VJOY_DESIRED_VERSION. Please restart this script after downloading and installing vJoy $VJOY_DESIRED_VERSION manually"
             confirm_exit
         fi
     else
@@ -356,7 +372,7 @@ else
             else
                 false
             fi
-            check_retval 'Error: Failed to install libSDL2, please restart this script after installing libSDL2 manually'
+            check_retval 'Error: Failed to install libSDL2. Please restart this script after installing libSDL2 manually'
         fi
 
         if ! getent group uinput >/dev/null
