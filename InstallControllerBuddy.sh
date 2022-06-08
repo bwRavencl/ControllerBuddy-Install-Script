@@ -116,9 +116,9 @@ function check_retval() {
 function check_vjoy_installed() {
     log "Checking if vJoy $VJOY_DESIRED_VERSION is installed..."
     local VJOY_UNINSTALL_REGISTRY_KEY='HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{8E31F76F-74C3-47F1-9550-E041EEDC5FBB}_is1'
-    VJOY_DIR=$(REG QUERY "$VJOY_UNINSTALL_REGISTRY_KEY" //V InstallLocation | grep InstallLocation | sed -n -e 's/^.*REG_SZ    //p' | sed 's/\\*$//')
+    VJOY_DIR=$(REG QUERY "$VJOY_UNINSTALL_REGISTRY_KEY" //V InstallLocation 2>/dev/null | grep InstallLocation | sed -n -e 's/^.*REG_SZ    //p' | sed 's/\\*$//')
     VJOY_CONFIG_EXE_PATH="$VJOY_DIR\\x64\\vJoyConfig.exe"
-    VJOY_CURRENT_VERSION=$(REG QUERY "$VJOY_UNINSTALL_REGISTRY_KEY" //V DisplayVersion | grep DisplayVersion | sed -n -e 's/^.*REG_SZ    //p')
+    VJOY_CURRENT_VERSION=$(REG QUERY "$VJOY_UNINSTALL_REGISTRY_KEY" //V DisplayVersion 2>/dev/null | grep DisplayVersion | sed -n -e 's/^.*REG_SZ    //p')
     if [ -n "$VJOY_DIR" ] && [ -d "$VJOY_DIR" ] && [ -f "$VJOY_CONFIG_EXE_PATH" ] && [ "$VJOY_CURRENT_VERSION" = "$VJOY_DESIRED_VERSION" ]
     then
         VJOY_INSTALLED=true
@@ -385,6 +385,7 @@ else
         AUTO_EXIT=true
     fi
 
+    echo
     log 'Checking for the latest ControllerBuddy release...'
     JSON=$(curl https://api.github.com/repos/bwRavencl/ControllerBuddy/releases/latest)
     check_retval 'Error: Failed to obtain ControllerBuddy release information from GitHub'
