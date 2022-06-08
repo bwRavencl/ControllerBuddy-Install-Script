@@ -16,7 +16,7 @@ It performs the following tasks:
   - `Update ControllerBuddy` (performs the same steps as if you would run `InstallControllerBuddy.sh`)
   - `Uninstall ControllerBuddy` (removes ControllerBuddy (except the ControllerBuddy-Profiles repository by launching `InstallControllerBuddy.sh uninstall`)
 - Ensures you have the latest version of the official [ControllerBuddy-Profiles](https://github.com/bwRavencl/ControllerBuddy-Profiles) installed into your user's `Documents` folder
-- Sets up [ControllerBuddy-DCS-Integration](https://github.com/bwRavencl/ControllerBuddy-DCS-Integration) if [DCS World](https://www.digitalcombatsimulator.com) (Stable or OpenBeta) is present y (*only on Windows*)
+- Sets up [ControllerBuddy-DCS-Integration](https://github.com/bwRavencl/ControllerBuddy-DCS-Integration) if [DCS World](https://www.digitalcombatsimulator.com) (Stable or OpenBeta) is present (*only on Windows*)
 - When updating: stops and relaunches ControllerBuddy (with arguments: `-autostart local -tray`) after updating is completed
 
 #### Usage:
