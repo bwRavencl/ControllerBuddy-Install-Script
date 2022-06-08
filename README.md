@@ -14,10 +14,10 @@ It performs the following tasks:
 - If missing creates the following Start menu shortcuts:
   - `ControllerBuddy` (launches ControllerBuddy with arguments: `-autostart local -tray`)
   - `Update ControllerBuddy` (performs the same steps as if you would run `InstallControllerBuddy.sh`)
-  - `Uninstall ControllerBuddy` (removes ControllerBuddy (except the ControllerBuddy-Profiles repository by launching `InstallControllerBuddy.sh uninstall`)
+  - `Uninstall ControllerBuddy` (removes ControllerBuddy by launching `InstallControllerBuddy.sh uninstall`)
 - Ensures you have the latest version of the official [ControllerBuddy-Profiles](https://github.com/bwRavencl/ControllerBuddy-Profiles) installed into your user's `Documents` folder
-- Sets up [ControllerBuddy-DCS-Integration](https://github.com/bwRavencl/ControllerBuddy-DCS-Integration) if [DCS World](https://www.digitalcombatsimulator.com) (Stable or OpenBeta) is present (*only on Windows*)
-- When updating: stops and relaunches ControllerBuddy (with arguments: `-autostart local -tray`) after updating is completed
+- Sets up [ControllerBuddy-DCS-Integration](https://github.com/bwRavencl/ControllerBuddy-DCS-Integration) if [DCS World](https://www.digitalcombatsimulator.com) is present (*only on Windows*)
+- When updating stops and later relaunches ControllerBuddy (with arguments: `-autostart local -tray`)
 
 #### Usage:
 1. **On Windows only:** Make sure you have installed [Git for Windows](https://git-scm.com/download/win) first (if unsure use the default options during installation)
