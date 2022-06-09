@@ -357,9 +357,12 @@ else
             confirm_exit
         fi
     else
-        if ! ldconfig -p | grep -q libSDL2
+        log 'Checking if libSDL2 is installed...'
+        if ldconfig -p | grep -q libSDL2
         then
-            log 'Installing libSDL2...'
+            log 'Yes'
+        else
+            log 'No - installing libSDL2...'
             if which apt-get >/dev/null
             then
                 sudo -- sh -c 'apt-get update && apt-get install -y libsdl2-2.0-0'
@@ -375,19 +378,25 @@ else
             check_retval 'Error: Failed to install libSDL2. Please restart this script after installing libSDL2 manually'
         fi
 
-        if ! getent group uinput >/dev/null
+        log "Checking for 'uinput' group..."
+        if getent group uinput >/dev/null
         then
-            log "Creating a 'uinput' group"
+            log 'Yes'
+        else
+            log "No - creating a 'uinput' group"
             sudo groupadd -f uinput
             check_retval "Error: Failed to create a 'uinput' group"
             REBOOT_REQUIRED=true
         fi
 
-        if ! id -nGz "$USER" | grep -qzxF uinput
+        log "Checking if user '$USER' is in 'uinput' group..."
+        if id -nGz "$USER" | grep -qzxF uinput
         then
-            log "Adding user $USER to the 'uinput' group"
+            log  'Yes'
+        else
+            log "No - adding user '$USER' to the 'uinput' group"
             sudo gpasswd -a "$USER" uinput
-            check_retval "Error: Failed to add user $USER to the 'uinput' group"
+            check_retval "Error: Failed to add user '$USER' to the 'uinput' group"
             REBOOT_REQUIRED=true
         fi
 
