@@ -33,7 +33,7 @@ EOF
 
 function log() {
     echo "$1"
-    if [ -z "$LOG_FILE" ]
+    if [ -n "$LOG_FILE" ]
     then
         echo "$(date -R): $1" | grep . >> "$LOG_FILE"
     fi
