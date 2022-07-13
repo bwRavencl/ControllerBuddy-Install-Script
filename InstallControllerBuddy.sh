@@ -156,7 +156,7 @@ function remove_controller_buddy() {
 if [ -d "$CB_DIR" ]
 then
     log 'Stopping any old ControllerBuddy process...'
-    if [ "$OSTYPE" = msys ] && taskkill -F -IM $CB_EXE >/dev/null 2>/dev/null || [ "$OSTYPE" = linux-gnu ] && killall ControllerBuddy 2>/dev/null
+    if { [ "$OSTYPE" = msys ] && taskkill -F -IM $CB_EXE >/dev/null 2>/dev/null ; } || { [ "$OSTYPE" = linux-gnu ] && killall ControllerBuddy 2>/dev/null ; }
     then
         log 'Done!'
         sleep 2
