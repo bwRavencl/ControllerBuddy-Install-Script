@@ -46,7 +46,7 @@ function confirm_exit() {
         log 'IMPORTANT: System configuration has been modified. Please reboot your system!'
     fi
     read -rp 'Press enter to exit'
-    exit 1
+    exit "$1"
 }
 
 SCRIPT_NAME=$(basename "$0")
@@ -86,7 +86,7 @@ case "$OSTYPE" in
         ;;
      *)
         log 'Error: This script must either be run in a Git Bash for Windows or a GNU/Linux Bash environment'
-        confirm_exit
+        confirm_exit 1
         ;;
 esac
 
@@ -95,7 +95,7 @@ rm -rf "$LOG_FILE"
 if [ "$(arch)" != x86_64 ]
 then
     log 'Error: This script is intended to be run on x86_64 systems'
-    confirm_exit
+    confirm_exit 1
 fi
 
 if [ "$1" = uninstall ]
@@ -110,7 +110,7 @@ function check_retval() {
         echo
     else
         log "$1"
-        confirm_exit
+        confirm_exit 1
     fi
 }
 
@@ -330,7 +330,7 @@ else
                 check_vjoy_installed
             else
                 log 'Error: Failed to obtain vJoy from GitHub'
-                confirm_exit
+                confirm_exit 1
             fi
         fi
 
@@ -349,12 +349,12 @@ else
                 if [ "$VJOY_CONFIGURED" != true ]
                 then
                     log 'Error: Failed to configure vJoy device'
-                    confirm_exit
+                    confirm_exit 1
                 fi
             fi
         else
             log "Error: Still failed to find vJoy $VJOY_DESIRED_VERSION. Please restart this script after downloading and installing vJoy $VJOY_DESIRED_VERSION manually"
-            confirm_exit
+            confirm_exit 1
         fi
     else
         log 'Checking if libSDL2 is installed...'
@@ -419,7 +419,7 @@ else
     if [ -z "$CB_LATEST_VERSION" ]
     then
         log 'Error: Failed to determine latest ControllerBuddy version'
-        confirm_exit
+        confirm_exit 1
     fi
 
     if [ "$CB_CURRENT_VERSION" = "$CB_LATEST_VERSION" ]
@@ -459,7 +459,7 @@ else
             echo
         else
             log 'Error: Failed to decompress archive'
-            confirm_exit
+            confirm_exit 1
         fi
     fi
 
@@ -525,5 +525,5 @@ then
     done
     echo
 else
-    confirm_exit
+    confirm_exit 0
 fi
