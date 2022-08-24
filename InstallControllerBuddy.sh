@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set +o history
+
 : '
 Copyright (C) 2022  Matteo Hausner
 
