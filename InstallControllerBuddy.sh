@@ -94,7 +94,7 @@ esac
 
 rm -rf "$LOG_FILE"
 
-if [ "$(arch)" != x86_64 ]
+if [ "$(uname -m)" != x86_64 ]
 then
     log 'Error: This script is intended to be run on x86_64 systems'
     confirm_exit 1
