@@ -8,7 +8,7 @@ This script streamlines installing and updating [ControllerBuddy](https://contro
 It performs the following tasks:
 - Ensures you have the correct version of [vJoy](https://github.com/jshafer817/vJoy) installed (*only on Windows*)
 - Configures a vJoy device for ControllerBuddy (*only on Windows*)
-- Ensures you have [libSDL2](https://www.libsdl.org/) installed (*only on Linux*)
+- Ensures you have [cUrl](https://curl.se/) and [libSDL2](https://www.libsdl.org/) installed (*only on Linux*)
 - Configures [udev](https://www.freedesktop.org/software/systemd/man/udev.html) and [uinput](https://www.kernel.org/doc/html/latest/input/uinput.html) for ControllerBuddy (*only on Linux*)
 - Downloads and installs the latest release of ControllerBuddy
 - If missing creates the following Start menu shortcuts:
