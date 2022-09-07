@@ -525,7 +525,7 @@ else
         then
             start //B "" "$CB_EXE_PATH" '-autostart' 'local' '-tray' &
         else
-            "$CB_EXE_PATH" -autostart local -tray &
+            nohup "$CB_EXE_PATH" -autostart local -tray >/dev/null 2>/dev/null &
         fi
     fi
 fi
