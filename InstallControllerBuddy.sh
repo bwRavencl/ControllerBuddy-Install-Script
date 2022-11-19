@@ -422,7 +422,7 @@ else
 
     if [ -d "$CB_DIR" ]
     then
-        CB_CURRENT_VERSION=$(find "$CB_APP_DIR"/ControllerBuddy-*.jar -maxdepth 1 -print0 2>/dev/null | xargs -0 -I filename basename -s .jar filename | cut -d - -f 2,3)
+        CB_CURRENT_VERSION=$(find "$CB_APP_DIR" -name 'ControllerBuddy-*.jar' -maxdepth 2 -print0 2>/dev/null | xargs -0 -I filename basename -s .jar filename | cut -d - -f 2,3)
         AUTO_EXIT=true
     fi
 
