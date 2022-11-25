@@ -416,7 +416,7 @@ else
             REBOOT_REQUIRED=true
         fi
 
-        add_line_if_missing '/etc/udev/rules.d/99-input.rules' 'SUBSYSTEM=="misc", KERNEL=="uinput", MODE="0660", GROUP="uinput"'
+        add_line_if_missing '/etc/udev/rules.d/99-input.rules' 'KERNEL=="uinput", SUBSYSTEM=="misc", MODE="0660", GROUP="uinput"'
 
         add_line_if_missing '/etc/udev/rules.d/99-input.rules' 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="05c4", MODE="0666"'
         add_line_if_missing '/etc/udev/rules.d/99-input.rules' 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="09cc", MODE="0666"'
