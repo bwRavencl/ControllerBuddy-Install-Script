@@ -6,6 +6,7 @@ GNU General Public License v3.0
 #### Description:
 This script streamlines installing and updating [ControllerBuddy](https://controllerbuddy.org) and the official [ControllerBuddy-Profiles](https://github.com/bwRavencl/ControllerBuddy-Profiles) on Windows and Linux x86-64 systems.  
 It performs the following tasks:
+- Checks for the latest version of `InstallControllerBuddy.sh` and updates itself when necessary
 - Ensures you have the correct version of [vJoy](https://github.com/jshafer817/vJoy) installed (*only on Windows*)
 - Configures a vJoy device for ControllerBuddy (*only on Windows*)
 - Ensures you have [cUrl](https://curl.se/) and [libSDL2](https://www.libsdl.org/) installed (*only on Linux*)
@@ -25,5 +26,4 @@ It performs the following tasks:
 3. **On Linux only:** Make `InstallControllerBuddy.sh` executable with: `chmod +x InstallControllerBuddy.sh`
 4. Double click the downloaded file `InstallControllerBuddy.sh` to start installing / updating
 5. Regularly launch `Update ControllerBuddy` from the Start menu to receive latest updates for ControllerBuddy and the ControllerBuddy-Profiles
-6. You may also want to come back to this page from time to time to get the updated versions of `InstallControllerBuddy.sh`
-7. If you would like to remove ControllerBuddy from your system run `Uninstall ControllerBuddy` from the Start menu
+6. If you would like to remove ControllerBuddy from your system run `Uninstall ControllerBuddy` from the Start menu

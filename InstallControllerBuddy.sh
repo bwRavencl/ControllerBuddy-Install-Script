@@ -56,6 +56,7 @@ SCRIPT_NAME=$(basename "$0")
 case "$OSTYPE" in
     msys)
         LOG_FILE="$TMP\\InstallControllerBuddy.log"
+        TMP_INSTALL_SCRIPT_FILE="$TMP\\InstallControllerBuddy.sh"
         VJOY_DESIRED_VERSION='2.1.9.1'
         CB_PARENT_DIR="$LOCALAPPDATA\\Programs"
         CB_DIR="$CB_PARENT_DIR\\ControllerBuddy"
@@ -71,6 +72,7 @@ case "$OSTYPE" in
         ;;
     linux-gnu)
         LOG_FILE="/tmp/InstallControllerBuddy.log"
+        TMP_INSTALL_SCRIPT_FILE="/tmp/InstallControllerBuddy.sh"
         CB_PARENT_DIR="$HOME"
         CB_DIR="$CB_PARENT_DIR/ControllerBuddy"
         CB_BIN_DIR="$CB_DIR/bin"
@@ -100,11 +102,6 @@ then
     confirm_exit 1
 fi
 
-if [ "$1" = uninstall ]
-then
-    UNINSTALL=true
-fi
-
 function check_retval() {
     if [ "$?" -eq 0 ]
     then
@@ -115,6 +112,28 @@ function check_retval() {
         confirm_exit 1
     fi
 }
+
+if [ "$1" = uninstall ]
+then
+    UNINSTALL=true
+else
+    log 'Checking for the latest install script...'
+    if curl -o "$TMP_INSTALL_SCRIPT_FILE" -L https://raw.githubusercontent.com/bwRavencl/ControllerBuddy-Install-Script/master/InstallControllerBuddy.sh
+    then
+        if cmp -s "$0" "$TMP_INSTALL_SCRIPT_FILE"
+        then
+            log 'Install script is up-to-date!'
+        else
+            log 'Updating and restarting install script...'
+            echo "mv '$TMP_INSTALL_SCRIPT_FILE' '$0' && chmod +x '$0' && exec '$0' $1" | bash
+            check_retval 'Error: Failed to update and restart install script'
+            exit 0
+        fi
+    else
+        log 'Warning: Failed to obtain latest install script from GitHub'
+    fi
+    echo
+fi
 
 function check_vjoy_installed() {
     log "Checking if vJoy $VJOY_DESIRED_VERSION is installed..."
