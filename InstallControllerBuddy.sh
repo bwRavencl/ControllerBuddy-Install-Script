@@ -188,7 +188,7 @@ then
     fi
 
     log 'Removing ControllerBuddy'
-    find "$CB_DIR" -mindepth 1 -not -name "$SCRIPT_NAME" -not -path "$CB_BIN_DIR"  -delete
+    find "$CB_DIR" -mindepth 1 -not -name "$SCRIPT_NAME" -not -path "$CB_BIN_DIR" -delete
     check_retval 'Error: Failed to remove ControllerBuddy'
 fi
 }
@@ -519,6 +519,11 @@ else
 
     if [ "$OSTYPE" = msys ]
     then
+        log 'Running ControllerBuddy-Profiles configuration scripts...'
+        find "$CB_PROFILES_DIR\\configs" -mindepth 2 -maxdepth 2 -name 'Configure.ps1' -print0 | xargs -0 sh -c 'for arg do echo ; powershell -ExecutionPolicy Bypass -File $arg ; done'
+        log 'Done!'
+        echo
+
         install_dcs_integration "$DCS_STABLE_USER_DIR"
         install_dcs_integration "$DCS_OPEN_BETA_USER_DIR"
     fi
