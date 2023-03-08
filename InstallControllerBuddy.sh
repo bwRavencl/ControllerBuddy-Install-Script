@@ -251,6 +251,12 @@ then
 fi
 }
 
+function add_environment_variable() {
+    log "Adding $1 environment variable..."
+    setx "$1" "$2"
+    check_retval "Error: Failed to add $1 environment variable"
+}
+
 function install_dcs_integration() {
 if [ -d "$1" ]
 then
@@ -298,9 +304,7 @@ then
         fi
     elif [ "$UNINSTALL" != true ]
     then
-        log 'Adding CONTROLLER_BUDDY_EXECUTABLE environment variable...'
-        setx CONTROLLER_BUDDY_EXECUTABLE "$CB_EXE_PATH"
-        check_retval 'Error: Failed to add CONTROLLER_BUDDY_EXECUTABLE environment variable'
+        add_environment_variable CONTROLLER_BUDDY_EXECUTABLE "$CB_EXE_PATH"
     fi
 
     if REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_PROFILES_DIR >/dev/null 2>/dev/null
@@ -313,9 +317,7 @@ then
         fi
     elif [ "$UNINSTALL" != true ]
     then
-        log 'Adding CONTROLLER_BUDDY_PROFILES_DIR environment variable...'
-        setx CONTROLLER_BUDDY_PROFILES_DIR "$CB_PROFILES_DIR"
-        check_retval 'Error: Failed to add CONTROLLER_BUDDY_PROFILES_DIR environment variable'
+        add_environment_variable CONTROLLER_BUDDY_PROFILES_DIR "$CB_PROFILES_DIR"
     fi
 fi
 }
@@ -336,8 +338,18 @@ then
                     check_retval 'Error: Failed to remove ControllerBuddy shortcuts'
                 fi
 
-                install_dcs_integration "$DCS_STABLE_USER_DIR" uninstall
-                install_dcs_integration "$DCS_OPEN_BETA_USER_DIR" uninstall
+                if [ "$OSTYPE" = msys ]
+                then
+                    if REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS >/dev/null 2>/dev/null
+                    then
+                        log 'Removing CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS environment variable...'
+                        REG delete 'HKCU\Environment' //F //V CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS
+                        check_retval 'Error: Failed to remove CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS environment variable'
+                    fi
+
+                    install_dcs_integration "$DCS_STABLE_USER_DIR" uninstall
+                    install_dcs_integration "$DCS_OPEN_BETA_USER_DIR" uninstall
+                fi
 
                 rm -rf "$CB_DIR" 2>/dev/null
                 ;;
@@ -347,6 +359,7 @@ then
                 ;;
             *)
                 log "Invalid input. Please answer with 'yes' or 'no'."
+                echo
                 ;;
         esac
     done
@@ -519,10 +532,53 @@ else
 
     if [ "$OSTYPE" = msys ]
     then
-        log 'Running ControllerBuddy-Profiles configuration scripts...'
-        find "$CB_PROFILES_DIR\\configs" -mindepth 2 -maxdepth 2 -name 'Configure.ps1' -print0 | xargs -0 sh -c 'for arg do echo ; powershell -ExecutionPolicy Bypass -File $arg ; done'
-        log 'Done!'
-        echo
+        if REG_QUERY_OUTPUT=$(REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS 2>/dev/null) 
+        then
+            RUN_CONFIG_SCRIPTS=$(echo "$REG_QUERY_OUTPUT" | awk '{print tolower($3)}' | xargs)
+        fi
+
+        if [ "$RUN_CONFIG_SCRIPTS" != true ] && [ "$RUN_CONFIG_SCRIPTS" != false ]
+        then
+            echo The ControllerBuddy-Profiles configuration scripts can automatically configure the input settings of the following applications for usage with the official profiles:
+            find "$CB_PROFILES_DIR/configs" -mindepth 2 -maxdepth 2 -name 'Configure.ps1' | cut -d '/' -f 3 | tr _ ' ' | xargs -I name echo - name
+            echo
+            echo If you plan on using the official profiles, it is recommended to let the scripts make the necessary modifications.
+            echo 'Warning: You may want to backup your current input settings now, if you do not want to lose them.'
+            echo
+
+            while true;
+            do
+                read -rp 'Would you like to run the ControllerBuddy-Profiles configuration scripts? [yes/no/always/never] ' RESPONSE
+                case $RESPONSE in
+                    always)
+                        add_environment_variable CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS true
+                        ;&
+                    [Yy]*)
+                        RUN_CONFIG_SCRIPTS=true
+                        break
+                        ;;
+                    never)
+                        add_environment_variable CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS false
+                        ;&
+                    [Nn]*)
+                        RUN_CONFIG_SCRIPTS=false
+                        break
+                        ;;
+                    *)
+                        log "Invalid input. Please answer with 'yes', 'no', 'always' or 'never'."
+                        echo
+                        ;;
+                esac
+            done
+        fi
+
+        if [ "$RUN_CONFIG_SCRIPTS" = true ]
+        then
+            log 'Running ControllerBuddy-Profiles configuration scripts...'
+            find "$CB_PROFILES_DIR\\configs" -mindepth 2 -maxdepth 2 -name 'Configure.ps1' -print0 | xargs -0 sh -c 'for arg do echo ; powershell -ExecutionPolicy Bypass -File $arg ; done'
+            log 'Done!'
+            echo
+        fi
 
         install_dcs_integration "$DCS_STABLE_USER_DIR"
         install_dcs_integration "$DCS_OPEN_BETA_USER_DIR"

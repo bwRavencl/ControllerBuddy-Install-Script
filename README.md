@@ -18,7 +18,6 @@ It performs the following tasks:
   - `Uninstall ControllerBuddy` (removes ControllerBuddy by launching `InstallControllerBuddy.sh uninstall`)
 - Ensures you have the latest version of the official [ControllerBuddy-Profiles](https://github.com/bwRavencl/ControllerBuddy-Profiles) installed into your user's `Documents` folder
 - Executes the `Configure.ps1` scripts to configure your applications for usage with the official ControllerBuddy-Profiles (*only on Windows*)  
-**Warning:** This will modify your existing input settings of Condor 2, DCS World, Falcon BMS and IL-2 Sturmovik Great Battles. Backup your settings files if required!
 - Sets up [ControllerBuddy-DCS-Integration](https://github.com/bwRavencl/ControllerBuddy-DCS-Integration) if [DCS World](https://www.digitalcombatsimulator.com) is present (*only on Windows*)
 - When updating stops and later relaunches ControllerBuddy (with arguments: `-autostart local -tray`)
 
