@@ -575,7 +575,7 @@ else
         if [ "$RUN_CONFIG_SCRIPTS" = true ]
         then
             log 'Running ControllerBuddy-Profiles configuration scripts...'
-            find "$CB_PROFILES_DIR\\configs" -mindepth 2 -maxdepth 2 -name 'Configure.ps1' -print0 | xargs -0 sh -c 'for arg do echo ; powershell -ExecutionPolicy Bypass -File $arg ; done'
+            find "$CB_PROFILES_DIR\\configs" -mindepth 2 -maxdepth 2 -name 'Configure.ps1' -print0 | xargs -0 sh -c 'for arg do echo ; powershell -ExecutionPolicy Bypass -File $arg ; done' _
             log 'Done!'
             echo
         fi
