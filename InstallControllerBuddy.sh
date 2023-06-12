@@ -540,7 +540,7 @@ else
         if [ "$RUN_CONFIG_SCRIPTS" != true ] && [ "$RUN_CONFIG_SCRIPTS" != false ]
         then
             echo The ControllerBuddy-Profiles configuration scripts can automatically configure the input settings of the following applications for usage with the official profiles:
-            find "$CB_PROFILES_DIR/configs" -mindepth 2 -maxdepth 2 -name 'Configure.ps1' | cut -d '/' -f 3 | tr _ ' ' | xargs -I name echo - name
+            find "$CB_PROFILES_DIR/configs" -mindepth 2 -maxdepth 2 -name 'Configure.ps1' | cut -d / -f 3 | tr _ ' ' | xargs -I name echo - name
             echo
             echo If you plan on using the official profiles, it is recommended to let the scripts make the necessary modifications.
             echo 'Warning: You may want to backup your current input settings now, if you do not want to lose them.'
