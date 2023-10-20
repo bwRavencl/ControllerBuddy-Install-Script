@@ -51,7 +51,13 @@ function confirm_exit() {
     exit "$1"
 }
 
-SCRIPT_NAME=$(basename "$0")
+if [ -z "${BASH_SOURCE[0]}" ]
+then
+    log 'Error: Cannot determine script source'
+    confirm_exit 1
+fi
+
+SCRIPT_NAME=$(basename "${BASH_SOURCE[0]}")
 
 case "$OSTYPE" in
     msys)
@@ -120,12 +126,12 @@ else
     log 'Checking for the latest install script...'
     if curl -o "$TMP_INSTALL_SCRIPT_FILE" -L https://raw.githubusercontent.com/bwRavencl/ControllerBuddy-Install-Script/master/InstallControllerBuddy.sh
     then
-        if cmp -s "$0" "$TMP_INSTALL_SCRIPT_FILE"
+        if cmp -s "${BASH_SOURCE[0]}" "$TMP_INSTALL_SCRIPT_FILE"
         then
             log 'Install script is up-to-date!'
         else
             log 'Updating and restarting install script...'
-            echo "mv '$TMP_INSTALL_SCRIPT_FILE' '$0' && chmod +x '$0' && exec '$0' $1" | bash
+            echo "mv '$TMP_INSTALL_SCRIPT_FILE' '${BASH_SOURCE[0]}' && chmod +x '${BASH_SOURCE[0]}' && exec '${BASH_SOURCE[0]}' $1" | bash
             check_retval 'Error: Failed to update and restart install script'
             exit 0
         fi
@@ -586,10 +592,10 @@ else
 
     SCRIPT_PATH="$CB_BIN_DIR/$SCRIPT_NAME"
 
-    if [ ! "$(dirname "$0")" -ef "$CB_BIN_DIR" ]
+    if [ ! "$(dirname "${BASH_SOURCE[0]}")" -ef "$CB_BIN_DIR" ]
     then
         log "Updating local copy of $SCRIPT_NAME..."
-        cp "$0" "$SCRIPT_PATH"
+        cp "${BASH_SOURCE[0]}" "$SCRIPT_PATH"
         check_retval "Error: Failed to copy $SCRIPT_NAME to $SCRIPT_PATH"
     fi
 
