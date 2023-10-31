@@ -35,11 +35,13 @@ It performs the following tasks:
     - **On Windows:** Make sure you have installed [Git for Windows](https://git-scm.com/download/win)
       (if unsure use the default options during installation)
     - **On Linux:** Make `InstallControllerBuddy.sh` executable with: `chmod +x InstallControllerBuddy.sh`
-3. Double-click the downloaded file `InstallControllerBuddy.sh` to start installing / updating
+3. Make sure your gamepad is connected
+4. Double-click the downloaded file `InstallControllerBuddy.sh` to start installing / updating
 
 #### Updating:
 
-To receive the latest updates for ControllerBuddy and the ControllerBuddy-Profiles launch `Update ControllerBuddy` from the Start menu.
+To receive the latest updates for ControllerBuddy and the ControllerBuddy-Profiles launch `Update ControllerBuddy` from the Start menu.  
+**Important:** Always ensure that your gamepad is connected before starting the script!
 
 #### Uninstalling:
 
