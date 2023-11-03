@@ -1,10 +1,6 @@
-## ControllerBuddy-Install-Script
+# ControllerBuddy-Install-Script
 
-#### License Information:
-
-GNU General Public License v3.0
-
-#### Description:
+## Description
 
 This script streamlines installing and updating [ControllerBuddy](https://controllerbuddy.org) and the official [ControllerBuddy-Profiles](https://github.com/bwRavencl/ControllerBuddy-Profiles) on Windows and Linux x86-64 systems.  
 It performs the following tasks:
@@ -27,22 +23,29 @@ It performs the following tasks:
   (*only on Windows*)
 - When updating stops and later relaunches ControllerBuddy (with arguments: `-autostart local -tray`)
 
-#### Installing:
+## Installing
 
 1. Right click [here](https://raw.githubusercontent.com/bwRavencl/ControllerBuddy-Install-Script/master/InstallControllerBuddy.sh)
    and select *Save link as* to download `InstallControllerBuddy.sh`
 2. Depending on your operating system:
+
     - **On Windows:** Make sure you have installed [Git for Windows](https://git-scm.com/download/win)
       (if unsure use the default options during installation)
+
     - **On Linux:** Make `InstallControllerBuddy.sh` executable with: `chmod +x InstallControllerBuddy.sh`
 3. Make sure your gamepad is connected
 4. Double-click the downloaded file `InstallControllerBuddy.sh` to start installing / updating
 
-#### Updating:
+## Updating
 
-To receive the latest updates for ControllerBuddy and the ControllerBuddy-Profiles launch `Update ControllerBuddy` from the Start menu.  
-**Important:** Always ensure that your gamepad is connected before starting the script!
+Launch `Update ControllerBuddy` from the Start menu to receive the latest updates for ControllerBuddy and the ControllerBuddy-Profiles.
 
-#### Uninstalling:
+**Important:** Always check that your gamepad is connected before starting the script!
+
+## Uninstalling
 
 If you would like to remove ControllerBuddy from your system run `Uninstall ControllerBuddy` from the Start menu.
+
+## License Information
+
+GNU General Public License v3.0
