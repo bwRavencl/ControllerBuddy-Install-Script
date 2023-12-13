@@ -12,4 +12,4 @@ jobs:
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@2.0.0
         env:
-          SHELLCHECK_OPTS: -e SC1003 -e SC2016
+          SHELLCHECK_OPTS: -e SC1003
