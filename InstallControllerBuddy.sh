@@ -421,7 +421,7 @@ else
             install_package 'curl' 'curl' 'curl'
             check_retval 'Error: Failed to install cURL. Please restart this script after installing cURL manually'
         fi
-    
+
         log 'Checking if libSDL2 is installed...'
         if ldconfig -p | grep -q libSDL2
         then
@@ -538,7 +538,7 @@ else
 
     if [ "$OSTYPE" = msys ]
     then
-        if REG_QUERY_OUTPUT=$(REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS 2>/dev/null) 
+        if REG_QUERY_OUTPUT=$(REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS 2>/dev/null)
         then
             RUN_CONFIG_SCRIPTS=$(echo "$REG_QUERY_OUTPUT" | awk '{print tolower($3)}' | xargs)
         fi
