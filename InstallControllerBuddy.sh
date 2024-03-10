@@ -305,7 +305,7 @@ then
         if [ "$UNINSTALL" = true ]
         then
             log 'Removing CONTROLLER_BUDDY_EXECUTABLE environment variable...'
-            REG delete 'HKCU\Environment' //F //V CONTROLLER_BUDDY_EXECUTABLE
+            REG DELETE 'HKCU\Environment' //F //V CONTROLLER_BUDDY_EXECUTABLE
             check_retval 'Error: Failed to remove CONTROLLER_BUDDY_EXECUTABLE environment variable'
         fi
     elif [ "$UNINSTALL" != true ]
@@ -318,7 +318,7 @@ then
         if [ "$UNINSTALL" = true ]
         then
             log 'Removing CONTROLLER_BUDDY_PROFILES_DIR environment variable...'
-            REG delete 'HKCU\Environment' //F //V CONTROLLER_BUDDY_PROFILES_DIR
+            REG DELETE 'HKCU\Environment' //F //V CONTROLLER_BUDDY_PROFILES_DIR
             check_retval 'Error: Failed to remove CONTROLLER_BUDDY_PROFILES_DIR environment variable'
         fi
     elif [ "$UNINSTALL" != true ]
@@ -349,7 +349,7 @@ then
                     if REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS >/dev/null 2>/dev/null
                     then
                         log 'Removing CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS environment variable...'
-                        REG delete 'HKCU\Environment' //F //V CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS
+                        REG DELETE 'HKCU\Environment' //F //V CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS
                         check_retval 'Error: Failed to remove CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS environment variable'
                     fi
 
