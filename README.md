@@ -12,7 +12,7 @@ It performs the following tasks:
 - Configures [udev](https://www.freedesktop.org/software/systemd/man/udev.html) and [uinput](https://www.kernel.org/doc/html/latest/input/uinput.html) for ControllerBuddy
   (*only on Linux*)
 - Downloads and installs the latest release of ControllerBuddy
-- If missing creates the following Start menu shortcuts:
+- If missing, creates the following shortcuts in the Start menu:
     - `ControllerBuddy` (launches ControllerBuddy with arguments: `-autostart local -tray`)
     - `Update ControllerBuddy` (performs the same steps as if you would run `InstallControllerBuddy.sh`)
     - `Uninstall ControllerBuddy` (removes ControllerBuddy by launching `InstallControllerBuddy.sh uninstall`)
@@ -21,7 +21,7 @@ It performs the following tasks:
   (*only on Windows*)
 - Sets up [ControllerBuddy-DCS-Integration](https://github.com/bwRavencl/ControllerBuddy-DCS-Integration) if [DCS World](https://www.digitalcombatsimulator.com) is present
   (*only on Windows*)
-- When updating stops and later relaunches ControllerBuddy (with arguments: `-autostart local -tray`)
+- When updating, stops and later restarts ControllerBuddy (with arguments: `-autostart local -tray`)
 
 ## Installing
 
@@ -38,13 +38,13 @@ It performs the following tasks:
 
 ## Updating
 
-Launch `Update ControllerBuddy` from the Start menu to receive the latest updates for ControllerBuddy and the ControllerBuddy-Profiles.
+Run `Update ControllerBuddy` from the Start menu to get the latest updates for ControllerBuddy and the ControllerBuddy-Profiles.
 
-**Important:** Always check that your gamepad is connected before starting the script!
+**Important:** Always make sure that your gamepad is connected before running the script!
 
 ## Uninstalling
 
-If you would like to remove ControllerBuddy from your system run `Uninstall ControllerBuddy` from the Start menu.
+If you wish to remove ControllerBuddy from your system, run `Uninstall ControllerBuddy` from the Start menu.
 
 ## License Information
 
