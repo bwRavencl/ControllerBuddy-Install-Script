@@ -86,7 +86,7 @@ case "$OSTYPE" in
         CB_APP_DIR="$CB_LIB_DIR/app"
         CB_EXE=ControllerBuddy
         CB_EXE_PATH="$CB_BIN_DIR/$CB_EXE"
-        if which xdg-user-dir >/dev/null
+        if which xdg-user-dir >/dev/null 2>/dev/null
         then
             CB_PROFILES_DIR="$(xdg-user-dir DOCUMENTS)/ControllerBuddy-Profiles"
         else
@@ -200,13 +200,13 @@ fi
 }
 
 function install_package() {
-if which apt-get >/dev/null
+if which apt-get >/dev/null 2>/dev/null
 then
     sudo -- sh -c "apt-get update && apt-get install -y $1"
-elif which yum >/dev/null
+elif which yum >/dev/null 2>/dev/null
 then
     sudo yum install "$2"
-elif which pacman >/dev/null
+elif which pacman >/dev/null 2>/dev/null
 then
     sudo pacman -S --noconfirm "$3"
 else
@@ -413,7 +413,7 @@ else
         fi
     else
         log 'Checking if cURL is installed...'
-        if which curl >/dev/null
+        if which curl >/dev/null 2>/dev/null
         then
             log 'Yes'
         else
