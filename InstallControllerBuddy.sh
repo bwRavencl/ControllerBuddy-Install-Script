@@ -131,7 +131,7 @@ else
             log 'Install script is up-to-date!'
         else
             log 'Updating and restarting install script...'
-            echo "mv '$TMP_INSTALL_SCRIPT_FILE' '${BASH_SOURCE[0]}' && chmod +x '${BASH_SOURCE[0]}' && exec '${BASH_SOURCE[0]}' $1" | bash
+            bash -c "mv '$TMP_INSTALL_SCRIPT_FILE' '${BASH_SOURCE[0]}' && chmod +x '${BASH_SOURCE[0]}' && exec '${BASH_SOURCE[0]}' $1"
             check_retval 'Error: Failed to update and restart install script'
             exit 0
         fi
