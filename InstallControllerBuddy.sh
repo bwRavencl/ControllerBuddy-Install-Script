@@ -432,6 +432,16 @@ else
             check_retval 'Error: Failed to install libSDL2. Please restart this script after installing libSDL2 manually'
         fi
 
+        log 'Checking if Git is installed...'
+        if which git >/dev/null 2>/dev/null
+        then
+            log 'Yes'
+        else
+            log 'No - installing Git...'
+            install_package 'git' 'git' 'git'
+            check_retval 'Error: Failed to install Git. Please restart this script after installing Git manually'
+        fi
+
         log "Checking for 'uinput' group..."
         if getent group uinput >/dev/null
         then
