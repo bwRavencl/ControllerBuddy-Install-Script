@@ -76,7 +76,7 @@ case "$OSTYPE" in
         DCS_STABLE_USER_DIR="$SAVED_GAMES_DIR\\DCS"
         DCS_OPEN_BETA_USER_DIR="$SAVED_GAMES_DIR\\DCS.openbeta"
         ;;
-    linux-gnu)
+    linux*)
         LOG_FILE="/tmp/InstallControllerBuddy.log"
         TMP_INSTALL_SCRIPT_FILE="/tmp/InstallControllerBuddy.sh"
         CB_PARENT_DIR="$HOME"
