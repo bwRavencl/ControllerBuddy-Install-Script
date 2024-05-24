@@ -205,7 +205,7 @@ then
     sudo -- sh -c "apt-get update && apt-get install -y $1"
 elif which yum >/dev/null 2>/dev/null
 then
-    sudo yum install "$2"
+    sudo yum -y install "$2"
 elif which pacman >/dev/null 2>/dev/null
 then
     sudo pacman -S --noconfirm "$3"
