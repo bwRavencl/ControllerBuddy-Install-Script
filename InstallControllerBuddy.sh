@@ -411,7 +411,7 @@ else
                 fi
             fi
         else
-            log "Error: Still failed to find vJoy $VJOY_DESIRED_VERSION. Please restart this script after downloading and installing vJoy $VJOY_DESIRED_VERSION manually"
+            log "Error: Still failed to find vJoy $VJOY_DESIRED_VERSION. Please restart this script after downloading and installing vJoy $VJOY_DESIRED_VERSION manually."
             confirm_exit 1
         fi
     else
@@ -422,7 +422,7 @@ else
         else
             log 'No - installing cURL...'
             install_package 'curl' 'curl' 'curl' 'curl'
-            check_retval 'Error: Failed to install cURL. Please restart this script after installing cURL manually'
+            check_retval 'Error: Failed to install cURL. Please restart this script after manually installing cURL.'
         fi
 
         log 'Checking if libSDL2 is installed...'
@@ -432,7 +432,7 @@ else
         else
             log 'No - installing libSDL2...'
             install_package 'libsdl2-2.0-0' 'SDL2' 'sdl2' 'SDL2'
-            check_retval 'Error: Failed to install libSDL2. Please restart this script after installing libSDL2 manually'
+            check_retval 'Error: Failed to install libSDL2. Please restart this script after manually installing libSDL2.'
         fi
 
         log 'Checking if Git is installed...'
@@ -442,7 +442,7 @@ else
         else
             log 'No - installing Git...'
             install_package 'git' 'git' 'git' 'git'
-            check_retval 'Error: Failed to install Git. Please restart this script after installing Git manually'
+            check_retval 'Error: Failed to install Git. Please restart this script after manually installing Git.'
         fi
 
         log "Checking for 'uinput' group..."
