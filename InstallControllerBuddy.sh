@@ -209,6 +209,9 @@ then
 elif which pacman >/dev/null 2>/dev/null
 then
     sudo pacman -S --noconfirm "$3"
+elif which zypper >/dev/null 2>/dev/null
+then
+    sudo zypper --non-interactive install "$4"
 else
     false
 fi
@@ -418,7 +421,7 @@ else
             log 'Yes'
         else
             log 'No - installing cURL...'
-            install_package 'curl' 'curl' 'curl'
+            install_package 'curl' 'curl' 'curl' 'curl'
             check_retval 'Error: Failed to install cURL. Please restart this script after installing cURL manually'
         fi
 
@@ -428,7 +431,7 @@ else
             log 'Yes'
         else
             log 'No - installing libSDL2...'
-            install_package 'libsdl2-2.0-0' 'SDL2' 'sdl2'
+            install_package 'libsdl2-2.0-0' 'SDL2' 'sdl2' 'SDL2'
             check_retval 'Error: Failed to install libSDL2. Please restart this script after installing libSDL2 manually'
         fi
 
@@ -438,7 +441,7 @@ else
             log 'Yes'
         else
             log 'No - installing Git...'
-            install_package 'git' 'git' 'git'
+            install_package 'git' 'git' 'git' 'git'
             check_retval 'Error: Failed to install Git. Please restart this script after installing Git manually'
         fi
 
