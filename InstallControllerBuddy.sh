@@ -450,7 +450,27 @@ else
         fi
 
         log 'Checking if libSDL2 is installed...'
-        if ldconfig -p | grep -q libSDL2
+        if which ldconfig >/dev/null 2>/dev/null
+        then
+            if ldconfig -p | grep -q libSDL2
+            then
+                LIBSDL2_FOUND=true
+            fi
+        else
+            check_sudo_privileges
+            if sudo which ldconfig >/dev/null 2>/dev/null
+            then
+                if sudo ldconfig -p | grep -q libSDL2
+                then
+                    LIBSDL2_FOUND=true
+                fi
+            else
+                log "Error: Unable to run ldconfig."
+                confirm_exit 1
+            fi
+        fi
+
+        if [ "$LIBSDL2_FOUND" = true ]
         then
             log 'Yes'
         else
