@@ -275,7 +275,7 @@ then
             local ICON_VALUE="$CB_LIB_DIR/ControllerBuddy.png"
             local TERMINAL_VALUE=false
         else
-            local ICON_VALUE=''
+            local ICON_VALUE='text-x-script'
             local TERMINAL_VALUE=true
         fi
         mkdir -p "$CB_SHORTCUTS_DIR" && echo -e "[Desktop Entry]\nType=Application\nName=$1\nIcon=$ICON_VALUE\nExec=$EXEC_VALUE\nPath=$4\nTerminal=$TERMINAL_VALUE\nCategories=Game" >> "$SHORTCUT_PATH"
