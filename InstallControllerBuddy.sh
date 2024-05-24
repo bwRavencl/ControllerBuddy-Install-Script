@@ -199,18 +199,41 @@ then
 fi
 }
 
+function check_sudo_privileges() {
+if [ "$HAS_SUDO_PRIVILEGES" != true ]
+then
+    if ! which sudo >/dev/null 2>/dev/null
+    then
+        log 'Error: sudo is not installed. Please restart this script after manually installing sudo.'
+        confirm_exit 1
+    fi
+
+    if sudo -v
+    then
+        HAS_SUDO_PRIVILEGES=true
+    else
+        log 'Error: User does not have sudo privileges. Please restart this script after manually adding the necessary permissions.'
+        confirm_exit 1
+    fi
+fi
+}
+
 function install_package() {
 if which apt-get >/dev/null 2>/dev/null
 then
+    check_sudo_privileges
     sudo -- sh -c "apt-get update && apt-get install -y $1"
 elif which yum >/dev/null 2>/dev/null
 then
+    check_sudo_privileges
     sudo yum -y install "$2"
 elif which pacman >/dev/null 2>/dev/null
 then
+    check_sudo_privileges
     sudo pacman -S --noconfirm "$3"
 elif which zypper >/dev/null 2>/dev/null
 then
+    check_sudo_privileges
     sudo zypper --non-interactive install "$4"
 else
     false
@@ -220,6 +243,7 @@ fi
 function add_line_if_missing() {
 if [ ! -f "$1" ] || ! grep -qxF "$2" "$1"
 then
+    check_sudo_privileges
     echo "$2" | sudo tee -a "$1"
     check_retval "Error: Failed to write $1"
     REBOOT_REQUIRED=true
