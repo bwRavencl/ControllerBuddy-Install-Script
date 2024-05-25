@@ -21,7 +21,7 @@ It performs the following tasks:
   (*only on Windows*)
 - Sets up [ControllerBuddy-DCS-Integration](https://github.com/bwRavencl/ControllerBuddy-DCS-Integration) if [DCS World](https://www.digitalcombatsimulator.com) is present
   (*only on Windows*)
-- When updating, stops and later restarts ControllerBuddy (with arguments: `-autostart local -tray`)
+- Stops ControllerBuddy when updating and restarts it later (with arguments: `-autostart local -tray`)
 
 ## Installing
 
