@@ -399,6 +399,12 @@ then
 else
     if [ "$OSTYPE" = msys ]
     then
+        if REG QUERY 'HKLM\SYSTEM\CurrentControlSet\Services\steamxbox' >/dev/null 2>/dev/null
+        then
+            log "Error: Steam's 'Xbox Extended Feature Support Driver' is installed on your system. Please restart this script after uninstalling this driver via the 'Steam Settings' dialog and rebooting your system."
+            confirm_exit 1
+        fi
+
         check_vjoy_installed
         if [ "$VJOY_INSTALLED" != true ]
         then
