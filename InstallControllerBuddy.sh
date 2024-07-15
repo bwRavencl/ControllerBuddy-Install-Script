@@ -246,7 +246,7 @@ if [ ! -f "$1" ] || ! grep -qxF "$2" "$1"
 then
     log "Adding missing line '$2' to file '$1'..."
     check_sudo_privileges
-    echo "$2" | sudo tee -a "$1"
+    echo "$2" | sudo tee -a "$1" >/dev/null 2>/dev/null
     check_retval "Error: Failed to write $1"
     REBOOT_REQUIRED=true
 fi
