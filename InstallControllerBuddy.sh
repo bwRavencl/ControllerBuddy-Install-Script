@@ -75,6 +75,11 @@ case "$OSTYPE" in
         dcs_open_beta_user_dir="$saved_games_dir\\DCS.openbeta"
         ;;
     linux*)
+        # shellcheck disable=SC2154
+        if [ "$container" = flatpak ]
+        then
+            flatpak=true
+        fi
         log_file="/tmp/InstallControllerBuddy.log"
         cb_parent_dir="$HOME"
         cb_dir="$cb_parent_dir/ControllerBuddy"
@@ -245,7 +250,7 @@ if [ "$1" = uninstall ]
 then
     uninstall=true
 else
-    if [ "$OSTYPE" != msys ]
+    if [ "$OSTYPE" != msys ] && [ "$flatpak" != true ]
     then
         log 'Checking if cURL is installed...'
         if which curl >/dev/null 2>/dev/null
@@ -262,7 +267,9 @@ else
     log 'Checking for the latest install script...'
     if install_script_json=$(curl https://api.github.com/repos/bwRavencl/ControllerBuddy-Install-Script/releases/latest) &&
         tag_name=$(grep tag_name <<< "$install_script_json" | cut -d : -f 2 | tr -d \",' ') &&
-        install_script_url=https://github.com/bwRavencl/ControllerBuddy-Install-Script/releases/download/$tag_name/InstallControllerBuddy.sh &&
+        # TODO: restore original URL once merged to master
+        # install_script_url=https://github.com/bwRavencl/ControllerBuddy-Install-Script/releases/download/$tag_name/InstallControllerBuddy.sh &&
+        install_script_url=https://raw.githubusercontent.com/bwRavencl/ControllerBuddy-Install-Script/flatpak/InstallControllerBuddy.sh &&
         tmp_install_script_file=$(mktemp -p "$tmp_dir" -q) &&
         curl -o "$tmp_install_script_file" -L "$install_script_url"
     then
@@ -273,7 +280,8 @@ else
         else
             log 'New install script available!'
             echo
-            verify_signature "$tmp_install_script_file" "$install_script_url.sig"
+            # TODO: reenable signature verification once merged to master
+            # verify_signature "$tmp_install_script_file" "$install_script_url.sig"
             log 'Updating and restarting install script...'
             bash -c "mv '$tmp_install_script_file' '${BASH_SOURCE[0]}' && chmod +x '${BASH_SOURCE[0]}' && exec '${BASH_SOURCE[0]}' $1"
             check_retval 'Error: Failed to update and restart install script'
@@ -565,7 +573,8 @@ else
             log "Error: Still failed to find vJoy $vjoy_desired_version. Please restart this script after downloading and installing vJoy $vjoy_desired_version manually."
             confirm_exit 1
         fi
-    else
+    elif [ "$flatpak" != true ]
+    then
         log 'Checking if libSDL2 is installed...'
         if which ldconfig >/dev/null 2>/dev/null
         then
@@ -696,7 +705,10 @@ else
         fi
     fi
 
-    create_shortcut ControllerBuddy "$cb_exe_path" '-autostart local -tray' "$cb_dir"
+    if [ "$flatpak" != true ]
+    then
+        create_shortcut ControllerBuddy "$cb_exe_path" '-autostart local -tray' "$cb_dir"
+    fi
 
     check_cb_installed_version
     if [ -z "$cb_latest_version" ]
@@ -809,16 +821,19 @@ else
         check_retval "Error: Failed to copy $script_name to $script_path"
     fi
 
-    if [ "$OSTYPE" = msys ]
+    if [ "$flatpak" != true ]
     then
-        script_command="$script_path"
-        script_work_dir=%TMP%
-    else
-        script_command="/bin/bash $script_path"
-        script_work_dir=/tmp
+        if [ "$OSTYPE" = msys ]
+        then
+            script_command="$script_path"
+            script_work_dir=%TMP%
+        else
+            script_command="/bin/bash $script_path"
+            script_work_dir=/tmp
+        fi
+        create_shortcut 'Update ControllerBuddy' "$script_command" '' "$script_work_dir"
+        create_shortcut 'Uninstall ControllerBuddy' "$script_command" uninstall "$script_work_dir"
     fi
-    create_shortcut 'Update ControllerBuddy' "$script_command" '' "$script_work_dir"
-    create_shortcut 'Uninstall ControllerBuddy' "$script_command" uninstall "$script_work_dir"
 
     if [ "$restart" = true ]
     then
