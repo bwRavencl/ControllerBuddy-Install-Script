@@ -76,6 +76,11 @@ case "$OSTYPE" in
         dcs_open_beta_user_dir="$saved_games_dir\\DCS.openbeta"
         ;;
     linux*)
+        # shellcheck disable=SC2154
+        if [ "$container" = flatpak ]
+        then
+            flatpak=true
+        fi
         log_file="/tmp/InstallControllerBuddy.log"
         cb_parent_dir="$HOME"
         cb_dir="$cb_parent_dir/ControllerBuddy"
@@ -177,7 +182,7 @@ else
     fi
 
     log 'Checking for the latest install script...'
-    install_script_url=https://raw.githubusercontent.com/bwRavencl/ControllerBuddy-Install-Script/master/InstallControllerBuddy.sh
+    install_script_url=https://raw.githubusercontent.com/bwRavencl/ControllerBuddy-Install-Script/flatpak/InstallControllerBuddy.sh
     if tmp_install_script_file=$(mktemp) && curl -o "$tmp_install_script_file" -L "$install_script_url"
     then
         if cmp -s "${BASH_SOURCE[0]}" "$tmp_install_script_file"
@@ -525,7 +530,8 @@ else
             log "Error: Still failed to find vJoy $vjoy_desired_version. Please restart this script after downloading and installing vJoy $vjoy_desired_version manually."
             confirm_exit 1
         fi
-    else
+    elif [ "$flatpak" != true ]
+    then
         log 'Checking if cURL is installed...'
         if which curl >/dev/null 2>/dev/null
         then
@@ -667,7 +673,10 @@ else
         fi
     fi
 
-    create_shortcut ControllerBuddy "$cb_exe_path" '-autostart local -tray' "$cb_dir"
+    if [ "$flatpak" != true ]
+    then
+        create_shortcut ControllerBuddy "$cb_exe_path" '-autostart local -tray' "$cb_dir"
+    fi
 
     if [ -d "$cb_profiles_dir" ]
     then
@@ -743,16 +752,19 @@ else
         check_retval "Error: Failed to copy $script_name to $script_path"
     fi
 
-    if [ "$OSTYPE" = msys ]
+    if [ "$flatpak" != true ]
     then
-        script_command="$script_path"
-        script_work_dir=%TMP%
-    else
-        script_command="/bin/bash $script_path"
-        script_work_dir=/tmp
+        if [ "$OSTYPE" = msys ]
+        then
+            script_command="$script_path"
+            script_work_dir=%TMP%
+        else
+            script_command="/bin/bash $script_path"
+            script_work_dir=/tmp
+        fi
+        create_shortcut 'Update ControllerBuddy' "$script_command" '' "$script_work_dir"
+        create_shortcut 'Uninstall ControllerBuddy' "$script_command" uninstall "$script_work_dir"
     fi
-    create_shortcut 'Update ControllerBuddy' "$script_command" '' "$script_work_dir"
-    create_shortcut 'Uninstall ControllerBuddy' "$script_command" uninstall "$script_work_dir"
 
     if [ "$restart" = true ]
     then
