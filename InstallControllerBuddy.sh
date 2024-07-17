@@ -35,15 +35,15 @@ EOF
 
 function log() {
     echo "$1"
-    if [ -n "$LOG_FILE" ]
+    if [ -n "$log_file" ]
     then
-        echo "$(date -R): $1" | grep . >> "$LOG_FILE"
+        echo "$(date -R): $1" | grep . >> "$log_file"
     fi
 }
 
 function confirm_exit() {
     echo
-    if [ "$REBOOT_REQUIRED" = true ]
+    if [ "$reboot_required" = true ]
     then
         log 'IMPORTANT: System configuration has been modified. Please reboot your system!'
     fi
@@ -57,40 +57,40 @@ then
     confirm_exit 1
 fi
 
-SCRIPT_NAME=$(basename "${BASH_SOURCE[0]}")
+script_name=$(basename "${BASH_SOURCE[0]}")
 
 case "$OSTYPE" in
     msys)
-        LOG_FILE="$TMP\\InstallControllerBuddy.log"
-        VJOY_DESIRED_VERSION='2.1.9.1'
-        CB_PARENT_DIR="$LOCALAPPDATA\\Programs"
-        CB_DIR="$CB_PARENT_DIR\\ControllerBuddy"
-        CB_BIN_DIR="$CB_DIR"
-        CB_EXE=ControllerBuddy.exe
-        CB_EXE_PATH="$CB_BIN_DIR\\$CB_EXE"
-        CB_APP_DIR="$CB_DIR\\app"
-        CB_PROFILES_DIR="$USERPROFILE\\Documents\\ControllerBuddy-Profiles"
-        CB_SHORTCUTS_DIR="$APPDATA\\Microsoft\\Windows\\Start Menu\\Programs\\ControllerBuddy"
-        SAVED_GAMES_DIR="$USERPROFILE\\Saved Games"
-        DCS_STABLE_USER_DIR="$SAVED_GAMES_DIR\\DCS"
-        DCS_OPEN_BETA_USER_DIR="$SAVED_GAMES_DIR\\DCS.openbeta"
+        log_file="$TMP\\InstallControllerBuddy.log"
+        vjoy_desired_version='2.1.9.1'
+        cb_parent_dir="$LOCALAPPDATA\\Programs"
+        cb_dir="$cb_parent_dir\\ControllerBuddy"
+        cb_bin_dir="$cb_dir"
+        cb_exe=ControllerBuddy.exe
+        cb_exe_path="$cb_bin_dir\\$cb_exe"
+        cb_app_dir="$cb_dir\\app"
+        cb_profiles_dir="$USERPROFILE\\Documents\\ControllerBuddy-Profiles"
+        cb_shortcuts_dir="$APPDATA\\Microsoft\\Windows\\Start Menu\\Programs\\ControllerBuddy"
+        saved_games_dir="$USERPROFILE\\Saved Games"
+        dcs_stable_user_dir="$saved_games_dir\\DCS"
+        dcs_open_beta_user_dir="$saved_games_dir\\DCS.openbeta"
         ;;
     linux*)
-        LOG_FILE="/tmp/InstallControllerBuddy.log"
-        CB_PARENT_DIR="$HOME"
-        CB_DIR="$CB_PARENT_DIR/ControllerBuddy"
-        CB_BIN_DIR="$CB_DIR/bin"
-        CB_LIB_DIR="$CB_DIR/lib"
-        CB_APP_DIR="$CB_LIB_DIR/app"
-        CB_EXE=ControllerBuddy
-        CB_EXE_PATH="$CB_BIN_DIR/$CB_EXE"
+        log_file="/tmp/InstallControllerBuddy.log"
+        cb_parent_dir="$HOME"
+        cb_dir="$cb_parent_dir/ControllerBuddy"
+        cb_bin_dir="$cb_dir/bin"
+        cb_lib_dir="$cb_dir/lib"
+        cb_app_dir="$cb_lib_dir/app"
+        cb_exe=ControllerBuddy
+        cb_exe_path="$cb_bin_dir/$cb_exe"
         if which xdg-user-dir >/dev/null 2>/dev/null
         then
-            CB_PROFILES_DIR="$(xdg-user-dir DOCUMENTS)/ControllerBuddy-Profiles"
+            cb_profiles_dir="$(xdg-user-dir DOCUMENTS)/ControllerBuddy-Profiles"
         else
-            CB_PROFILES_DIR="$HOME/ControllerBuddy-Profiles"
+            cb_profiles_dir="$HOME/ControllerBuddy-Profiles"
         fi
-        CB_SHORTCUTS_DIR="$HOME/.local/share/applications/ControllerBuddy"
+        cb_shortcuts_dir="$HOME/.local/share/applications/ControllerBuddy"
         ;;
      *)
         log 'Error: This script must either be run in a Git Bash for Windows or a GNU/Linux Bash environment'
@@ -98,7 +98,7 @@ case "$OSTYPE" in
         ;;
 esac
 
-rm -rf "$LOG_FILE"
+rm -rf "$log_file"
 
 if [ "$(uname -m)" != x86_64 ]
 then
@@ -119,21 +119,21 @@ function check_retval() {
 
 if [ "$1" = uninstall ]
 then
-    UNINSTALL=true
+    uninstall=true
 else
     log 'Checking for the latest install script...'
-    TMP_INSTALL_SCRIPT_FILE=$(mktemp)
-    if curl -o "$TMP_INSTALL_SCRIPT_FILE" -L https://raw.githubusercontent.com/bwRavencl/ControllerBuddy-Install-Script/master/InstallControllerBuddy.sh
+    tmp_install_script_file=$(mktemp)
+    if curl -o "$tmp_install_script_file" -L https://raw.githubusercontent.com/bwRavencl/ControllerBuddy-Install-Script/master/InstallControllerBuddy.sh
     then
-        if cmp -s "${BASH_SOURCE[0]}" "$TMP_INSTALL_SCRIPT_FILE"
+        if cmp -s "${BASH_SOURCE[0]}" "$tmp_install_script_file"
         then
             log 'Install script is up-to-date!'
-            rm -f "$TMP_INSTALL_SCRIPT_FILE"
+            rm -f "$tmp_install_script_file"
         else
             log 'Updating and restarting install script...'
-            bash -c "mv '$TMP_INSTALL_SCRIPT_FILE' '${BASH_SOURCE[0]}' && chmod +x '${BASH_SOURCE[0]}' && exec '${BASH_SOURCE[0]}' $1"
+            bash -c "mv '$tmp_install_script_file' '${BASH_SOURCE[0]}' && chmod +x '${BASH_SOURCE[0]}' && exec '${BASH_SOURCE[0]}' $1"
             check_retval 'Error: Failed to update and restart install script'
-            rm -f "$TMP_INSTALL_SCRIPT_FILE"
+            rm -f "$tmp_install_script_file"
             exit 0
         fi
     else
@@ -143,14 +143,14 @@ else
 fi
 
 function check_vjoy_installed() {
-    log "Checking if vJoy $VJOY_DESIRED_VERSION is installed..."
-    local VJOY_UNINSTALL_REGISTRY_KEY='HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{8E31F76F-74C3-47F1-9550-E041EEDC5FBB}_is1'
-    VJOY_DIR=$(REG QUERY "$VJOY_UNINSTALL_REGISTRY_KEY" //V InstallLocation 2>/dev/null | grep InstallLocation | sed -n -e 's/^.*REG_SZ    //p' | sed 's/\\*$//')
-    VJOY_CONFIG_EXE_PATH="$VJOY_DIR\\x64\\vJoyConfig.exe"
-    VJOY_CURRENT_VERSION=$(REG QUERY "$VJOY_UNINSTALL_REGISTRY_KEY" //V DisplayVersion 2>/dev/null | grep DisplayVersion | sed -n -e 's/^.*REG_SZ    //p')
-    if [ -n "$VJOY_DIR" ] && [ -d "$VJOY_DIR" ] && [ -f "$VJOY_CONFIG_EXE_PATH" ] && [ "$VJOY_CURRENT_VERSION" = "$VJOY_DESIRED_VERSION" ]
+    log "Checking if vJoy $vjoy_desired_version is installed..."
+    local vjoy_uninstall_registry_key='HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{8E31F76F-74C3-47F1-9550-E041EEDC5FBB}_is1'
+    vjoy_dir=$(REG QUERY "$vjoy_uninstall_registry_key" //V InstallLocation 2>/dev/null | grep InstallLocation | sed -n -e 's/^.*REG_SZ    //p' | sed 's/\\*$//')
+    vjoy_config_exe_path="$vjoy_dir\\x64\\vJoyConfig.exe"
+    vjoy_current_version=$(REG QUERY "$vjoy_uninstall_registry_key" //V DisplayVersion 2>/dev/null | grep DisplayVersion | sed -n -e 's/^.*REG_SZ    //p')
+    if [ -n "$vjoy_dir" ] && [ -d "$vjoy_dir" ] && [ -f "$vjoy_config_exe_path" ] && [ "$vjoy_current_version" = "$vjoy_desired_version" ]
     then
-        VJOY_INSTALLED=true
+        vjoy_installed=true
     fi
 }
 
@@ -160,48 +160,48 @@ function  get_vjoy_config_value() {
 
 function check_vjoy_configured() {
     log 'Checking if vJoy is configured correctly...'
-    local VJOY_CONFIG
-    VJOY_CONFIG=$("$VJOY_CONFIG_EXE_PATH" -t 1)
-    local VJOY_CONFIG_DEVICE
-    VJOY_CONFIG_DEVICE=$(get_vjoy_config_value "$VJOY_CONFIG" Device)
-    local VJOY_CONFIG_BUTTONS
-    VJOY_CONFIG_BUTTONS=$(get_vjoy_config_value "$VJOY_CONFIG" Buttons)
-    local VJOY_CONFIG_DESCRETE_POVS
-    VJOY_CONFIG_DESCRETE_POVS=$(get_vjoy_config_value "$VJOY_CONFIG" 'Descrete POVs')
-    local VJOY_CONFIG_CONTINUOUS_POVS
-    VJOY_CONFIG_CONTINUOUS_POVS=$(get_vjoy_config_value "$VJOY_CONFIG" 'Continous POVs')
-    local VJOY_CONFIG_AXES
-    VJOY_CONFIG_AXES=$(get_vjoy_config_value "$VJOY_CONFIG" Axes)
-    local VJOY_CONFIG_FFB_EFFECTS
-    VJOY_CONFIG_FFB_EFFECTS=$(get_vjoy_config_value "$VJOY_CONFIG" 'FFB Effects')
-    if [ "$VJOY_CONFIG_DEVICE" = 1 ] && [ "$VJOY_CONFIG_BUTTONS" = 128 ] && [ "$VJOY_CONFIG_DESCRETE_POVS" = 0 ] && [ "$VJOY_CONFIG_CONTINUOUS_POVS" = 0 ] && [ "$VJOY_CONFIG_AXES" = 'X Y Z Rx Ry Rz Sl0 Sl1' ] && [ "$VJOY_CONFIG_FFB_EFFECTS" = 'None' ]
+    local vjoy_config
+    vjoy_config=$("$vjoy_config_exe_path" -t 1)
+    local vjoy_config_device
+    vjoy_config_device=$(get_vjoy_config_value "$vjoy_config" Device)
+    local vjoy_config_buttons
+    vjoy_config_buttons=$(get_vjoy_config_value "$vjoy_config" Buttons)
+    local vjoy_config_descrete_povs
+    vjoy_config_descrete_povs=$(get_vjoy_config_value "$vjoy_config" 'Descrete POVs')
+    local vjoy_config_continuous_povs
+    vjoy_config_continuous_povs=$(get_vjoy_config_value "$vjoy_config" 'Continous POVs')
+    local vjoy_config_axes
+    vjoy_config_axes=$(get_vjoy_config_value "$vjoy_config" Axes)
+    local vjoy_config_ffb_effects
+    vjoy_config_ffb_effects=$(get_vjoy_config_value "$vjoy_config" 'FFB Effects')
+    if [ "$vjoy_config_device" = 1 ] && [ "$vjoy_config_buttons" = 128 ] && [ "$vjoy_config_descrete_povs" = 0 ] && [ "$vjoy_config_continuous_povs" = 0 ] && [ "$vjoy_config_axes" = 'X Y Z Rx Ry Rz Sl0 Sl1' ] && [ "$vjoy_config_ffb_effects" = 'None' ]
     then
-        VJOY_CONFIGURED=true
+        vjoy_configured=true
     fi
 }
 
 function remove_controller_buddy() {
-if [ -d "$CB_DIR" ]
+if [ -d "$cb_dir" ]
 then
     log 'Stopping any old ControllerBuddy process...'
-    if { [ "$OSTYPE" = msys ] && taskkill -F -IM $CB_EXE >/dev/null 2>/dev/null ; } || { [ "$OSTYPE" = linux-gnu ] && killall ControllerBuddy 2>/dev/null ; }
+    if { [ "$OSTYPE" = msys ] && taskkill -F -IM $cb_exe >/dev/null 2>/dev/null ; } || { [ "$OSTYPE" = linux-gnu ] && killall ControllerBuddy 2>/dev/null ; }
     then
         log 'Done!'
         sleep 2
-        if [ "$UNINSTALL" != true ]
+        if [ "$uninstall" != true ]
         then
-            RESTART=true
+            restart=true
         fi
     fi
 
     log 'Removing ControllerBuddy'
-    find "$CB_DIR" -mindepth 1 -not -name "$SCRIPT_NAME" -not -path "$CB_BIN_DIR" -delete
+    find "$cb_dir" -mindepth 1 -not -name "$script_name" -not -path "$cb_bin_dir" -delete
     check_retval 'Error: Failed to remove ControllerBuddy'
 fi
 }
 
 function check_sudo_privileges() {
-if [ "$HAS_SUDO_PRIVILEGES" != true ]
+if [ "$has_sudo_privileges" != true ]
 then
     if ! which sudo >/dev/null 2>/dev/null
     then
@@ -211,7 +211,7 @@ then
 
     if sudo -v
     then
-        HAS_SUDO_PRIVILEGES=true
+        has_sudo_privileges=true
     else
         log 'Error: User does not have sudo privileges. Please restart this script after manually adding the necessary permissions.'
         confirm_exit 1
@@ -248,39 +248,39 @@ then
     check_sudo_privileges
     echo "$2" | sudo tee -a "$1" >/dev/null 2>/dev/null
     check_retval "Error: Failed to write $1"
-    REBOOT_REQUIRED=true
+    reboot_required=true
 fi
 }
 
 function create_shortcut() {
 if [ "$OSTYPE" = msys ]
 then
-    local SHORTCUT_PATH="$CB_SHORTCUTS_DIR\\$1.lnk"
+    local shortcut_path="$cb_shortcuts_dir\\$1.lnk"
 else
-    local SHORTCUT_PATH="$CB_SHORTCUTS_DIR/$1.desktop"
+    local shortcut_path="$cb_shortcuts_dir/$1.desktop"
 fi
 
-if [ ! -f "$SHORTCUT_PATH" ]
+if [ ! -f "$shortcut_path" ]
 then
     log "Creating '$1' shortcut..."
     if [ "$OSTYPE" = msys ]
     then
-        mkdir -p "$CB_SHORTCUTS_DIR" && create-shortcut --arguments "$3" --work-dir "$4" "$2" "$SHORTCUT_PATH"
+        mkdir -p "$cb_shortcuts_dir" && create-shortcut --arguments "$3" --work-dir "$4" "$2" "$shortcut_path"
     else
-        local EXEC_VALUE=$2
+        local exec_value=$2
         if [ -n "$3" ]
         then
-            EXEC_VALUE="$EXEC_VALUE $3"
+            exec_value="$exec_value $3"
         fi
         if [ "$1" = ControllerBuddy ]
         then
-            local ICON_VALUE="$CB_LIB_DIR/ControllerBuddy.png"
-            local TERMINAL_VALUE=false
+            local icon_value="$cb_lib_dir/ControllerBuddy.png"
+            local terminal_value=false
         else
-            local ICON_VALUE='text-x-script'
-            local TERMINAL_VALUE=true
+            local icon_value='text-x-script'
+            local terminal_value=true
         fi
-        mkdir -p "$CB_SHORTCUTS_DIR" && echo -e "[Desktop Entry]\nType=Application\nName=$1\nIcon=$ICON_VALUE\nExec=$EXEC_VALUE\nPath=$4\nTerminal=$TERMINAL_VALUE\nCategories=Game" >> "$SHORTCUT_PATH"
+        mkdir -p "$cb_shortcuts_dir" && echo -e "[Desktop Entry]\nType=Application\nName=$1\nIcon=$icon_value\nExec=$exec_value\nPath=$4\nTerminal=$terminal_value\nCategories=Game" >> "$shortcut_path"
     fi
     check_retval "Error: Failed to create '$1' shortcut"
 fi
@@ -296,81 +296,81 @@ function install_dcs_integration() {
 if [ -d "$1" ]
 then
     log "Found DCS World user directory $1"
-    local DCS_SCIRPTS_DIR="$1\\Scripts"
+    local dcs_scirpts_dir="$1\\Scripts"
 
-    local CB_DCS_INTEGRATION_DIR="$DCS_SCIRPTS_DIR\\ControllerBuddy-DCS-Integration"
-    if [ -d "$CB_DCS_INTEGRATION_DIR" ]
+    local cb_dcs_integration_dir="$dcs_scirpts_dir\\ControllerBuddy-DCS-Integration"
+    if [ -d "$cb_dcs_integration_dir" ]
     then
-        if [ "$UNINSTALL" = true ]
+        if [ "$uninstall" = true ]
         then
-            rm -rf "$CB_DCS_INTEGRATION_DIR"
+            rm -rf "$cb_dcs_integration_dir"
         else
             log 'Pulling ControllerBuddy-DCS-Integration repository...'
-            git -C "$CB_DCS_INTEGRATION_DIR" pull origin master
+            git -C "$cb_dcs_integration_dir" pull origin master
             check_retval 'Error: Failed to pull ControllerBuddy-DCS-Integration repository'
         fi
-    elif [ "$UNINSTALL" != true ]
+    elif [ "$uninstall" != true ]
     then
         log 'Cloning ControllerBuddy-DCS-Integration repository...'
-        git clone https://github.com/bwRavencl/ControllerBuddy-DCS-Integration.git "$CB_DCS_INTEGRATION_DIR"
+        git clone https://github.com/bwRavencl/ControllerBuddy-DCS-Integration.git "$cb_dcs_integration_dir"
         check_retval 'Error: Failed to clone ControllerBuddy-DCS-Integration repository'
     fi
 
-    local EXPORT_LUA_PATH="$DCS_SCIRPTS_DIR\\Export.lua"
-    log "Updating $EXPORT_LUA_PATH for ControllerBuddy-DCS-Integration"
-    if [ "$UNINSTALL" = true ]
+    local export_lua_path="$dcs_scirpts_dir\\Export.lua"
+    log "Updating $export_lua_path for ControllerBuddy-DCS-Integration"
+    if [ "$uninstall" = true ]
     then
-        sed -i "/\ControllerBuddy\b/d" "$EXPORT_LUA_PATH"
-        check_retval "Error: Failed to remove ControllerBuddy-DCS-Integration from $EXPORT_LUA_PATH"
+        sed -i "/\ControllerBuddy\b/d" "$export_lua_path"
+        check_retval "Error: Failed to remove ControllerBuddy-DCS-Integration from $export_lua_path"
     else
-        touch -a "$EXPORT_LUA_PATH"
-        local EXPORT_LUA_LINE='dofile(lfs.writedir()..[[Scripts\ControllerBuddy-DCS-Integration\ControllerBuddy.lua]])'
+        touch -a "$export_lua_path"
+        local export_lua_line='dofile(lfs.writedir()..[[Scripts\ControllerBuddy-DCS-Integration\ControllerBuddy.lua]])'
         # shellcheck disable=SC1003
-        grep -qxF "$EXPORT_LUA_LINE" "$EXPORT_LUA_PATH" || { sed -i '$a\' "$EXPORT_LUA_PATH" && echo "$EXPORT_LUA_LINE" >> "$EXPORT_LUA_PATH" && unix2dos -q "$EXPORT_LUA_PATH" ; }
-        check_retval "Error: Failed to add ControllerBuddy-DCS-Integration to $EXPORT_LUA_PATH"
+        grep -qxF "$export_lua_line" "$export_lua_path" || { sed -i '$a\' "$export_lua_path" && echo "$export_lua_line" >> "$export_lua_path" && unix2dos -q "$export_lua_path" ; }
+        check_retval "Error: Failed to add ControllerBuddy-DCS-Integration to $export_lua_path"
     fi
 
     if REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_EXECUTABLE >/dev/null 2>/dev/null
     then
-        if [ "$UNINSTALL" = true ]
+        if [ "$uninstall" = true ]
         then
             log 'Removing CONTROLLER_BUDDY_EXECUTABLE environment variable...'
             REG DELETE 'HKCU\Environment' //F //V CONTROLLER_BUDDY_EXECUTABLE
             check_retval 'Error: Failed to remove CONTROLLER_BUDDY_EXECUTABLE environment variable'
         fi
-    elif [ "$UNINSTALL" != true ]
+    elif [ "$uninstall" != true ]
     then
-        add_environment_variable CONTROLLER_BUDDY_EXECUTABLE "$CB_EXE_PATH"
+        add_environment_variable CONTROLLER_BUDDY_EXECUTABLE "$cb_exe_path"
     fi
 
     if REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_PROFILES_DIR >/dev/null 2>/dev/null
     then
-        if [ "$UNINSTALL" = true ]
+        if [ "$uninstall" = true ]
         then
             log 'Removing CONTROLLER_BUDDY_PROFILES_DIR environment variable...'
             REG DELETE 'HKCU\Environment' //F //V CONTROLLER_BUDDY_PROFILES_DIR
             check_retval 'Error: Failed to remove CONTROLLER_BUDDY_PROFILES_DIR environment variable'
         fi
-    elif [ "$UNINSTALL" != true ]
+    elif [ "$uninstall" != true ]
     then
-        add_environment_variable CONTROLLER_BUDDY_PROFILES_DIR "$CB_PROFILES_DIR"
+        add_environment_variable CONTROLLER_BUDDY_PROFILES_DIR "$cb_profiles_dir"
     fi
 fi
 }
 
-if [ "$UNINSTALL" = true ]
+if [ "$uninstall" = true ]
 then
     while true;
     do
-        read -rp 'Are you sure you want to uninstall ControllerBuddy? [y/N] ' RESPONSE
-        case $RESPONSE in
+        read -rp 'Are you sure you want to uninstall ControllerBuddy? [y/N] ' response
+        case $response in
             [Yy]*)
                 remove_controller_buddy
 
-                if [ -d "$CB_SHORTCUTS_DIR" ]
+                if [ -d "$cb_shortcuts_dir" ]
                 then
                     log 'Removing ControllerBuddy shortcuts...'
-                    rm -rf "$CB_SHORTCUTS_DIR"
+                    rm -rf "$cb_shortcuts_dir"
                     check_retval 'Error: Failed to remove ControllerBuddy shortcuts'
                 fi
 
@@ -383,11 +383,11 @@ then
                         check_retval 'Error: Failed to remove CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS environment variable'
                     fi
 
-                    install_dcs_integration "$DCS_STABLE_USER_DIR" uninstall
-                    install_dcs_integration "$DCS_OPEN_BETA_USER_DIR" uninstall
+                    install_dcs_integration "$dcs_stable_user_dir" uninstall
+                    install_dcs_integration "$dcs_open_beta_user_dir" uninstall
                 fi
 
-                rm -rf "$CB_DIR" 2>/dev/null
+                rm -rf "$cb_dir" 2>/dev/null
                 ;;
             [Nn]* | '')
                 log 'Bye-bye!'
@@ -409,15 +409,15 @@ else
         fi
 
         check_vjoy_installed
-        if [ "$VJOY_INSTALLED" != true ]
+        if [ "$vjoy_installed" != true ]
         then
-            log "No valid vJoy $VJOY_DESIRED_VERSION installation was found - downloading installer..."
-            VJOY_SETUP_EXE_PATH="$TMP\\vJoySetup.exe"
-            if curl -o "$VJOY_SETUP_EXE_PATH" -L https://github.com/jshafer817/vJoy/releases/download/v2.1.9.1/vJoySetup.exe
+            log "No valid vJoy $vjoy_desired_version installation was found - downloading installer..."
+            vjoy_setup_exe_path="$TMP\\vJoySetup.exe"
+            if curl -o "$vjoy_setup_exe_path" -L https://github.com/jshafer817/vJoy/releases/download/v2.1.9.1/vJoySetup.exe
             then
-                log "Installing vJoy $VJOY_DESIRED_VERSION..."
-                "$VJOY_SETUP_EXE_PATH" //VERYSILENT
-                rm -rf "$VJOY_SETUP_EXE_PATH"
+                log "Installing vJoy $vjoy_desired_version..."
+                "$vjoy_setup_exe_path" //VERYSILENT
+                rm -rf "$vjoy_setup_exe_path"
                 check_vjoy_installed
             else
                 log 'Error: Failed to obtain vJoy from GitHub'
@@ -425,26 +425,26 @@ else
             fi
         fi
 
-        if [ "$VJOY_INSTALLED" = true ]
+        if [ "$vjoy_installed" = true ]
         then
-            log "Found vJoy $VJOY_CURRENT_VERSION in $VJOY_DIR"
+            log "Found vJoy $vjoy_current_version in $vjoy_dir"
             check_vjoy_configured
-            if [ "$VJOY_CONFIGURED" = true ]
+            if [ "$vjoy_configured" = true ]
             then
                 log 'Yes'
             else
                 log 'No - starting elevated vJoyConfig process...'
-                powershell -Command "Start-Process '$VJOY_CONFIG_EXE_PATH' '1 -f -b 128' -Verb Runas -Wait"
+                powershell -Command "Start-Process '$vjoy_config_exe_path' '1 -f -b 128' -Verb Runas -Wait"
                 check_retval 'Error: Failed to start elevated vJoyConfig process'
                 check_vjoy_configured
-                if [ "$VJOY_CONFIGURED" != true ]
+                if [ "$vjoy_configured" != true ]
                 then
                     log 'Error: Failed to configure vJoy device'
                     confirm_exit 1
                 fi
             fi
         else
-            log "Error: Still failed to find vJoy $VJOY_DESIRED_VERSION. Please restart this script after downloading and installing vJoy $VJOY_DESIRED_VERSION manually."
+            log "Error: Still failed to find vJoy $vjoy_desired_version. Please restart this script after downloading and installing vJoy $vjoy_desired_version manually."
             confirm_exit 1
         fi
     else
@@ -463,7 +463,7 @@ else
         then
             if ldconfig -p | grep -q libSDL2
             then
-                LIBSDL2_FOUND=true
+                libsdl2_found=true
             fi
         else
             check_sudo_privileges
@@ -471,7 +471,7 @@ else
             then
                 if sudo ldconfig -p | grep -q libSDL2
                 then
-                    LIBSDL2_FOUND=true
+                    libsdl2_found=true
                 fi
             else
                 log "Error: Unable to run ldconfig."
@@ -479,7 +479,7 @@ else
             fi
         fi
 
-        if [ "$LIBSDL2_FOUND" = true ]
+        if [ "$libsdl2_found" = true ]
         then
             log 'Yes'
         else
@@ -506,7 +506,7 @@ else
             log "No - creating a 'uinput' group"
             sudo groupadd -f uinput
             check_retval "Error: Failed to create a 'uinput' group"
-            REBOOT_REQUIRED=true
+            reboot_required=true
         fi
 
         log "Checking if user '$USER' is in 'uinput' group..."
@@ -517,7 +517,7 @@ else
             log "No - adding user '$USER' to the 'uinput' group"
             sudo gpasswd -a "$USER" uinput
             check_retval "Error: Failed to add user '$USER' to the 'uinput' group"
-            REBOOT_REQUIRED=true
+            reboot_required=true
         fi
 
         add_line_if_missing '/etc/udev/rules.d/99-input.rules' 'KERNEL=="uinput", SUBSYSTEM=="misc", MODE="0660", GROUP="uinput"'
@@ -530,42 +530,42 @@ else
         add_line_if_missing '/etc/modules-load.d/uinput.conf' 'uinput'
     fi
 
-    if [ -d "$CB_DIR" ]
+    if [ -d "$cb_dir" ]
     then
-        CB_CURRENT_VERSION=$(find "$CB_APP_DIR" -iname 'controllerbuddy-*.jar' -maxdepth 2 -print0 2>/dev/null | xargs -0 -I filename basename -s .jar filename | cut -d - -f 2,3)
-        AUTO_EXIT=true
+        cb_current_version=$(find "$cb_app_dir" -iname 'controllerbuddy-*.jar' -maxdepth 2 -print0 2>/dev/null | xargs -0 -I filename basename -s .jar filename | cut -d - -f 2,3)
+        auto_exit=true
     fi
 
     echo
     log 'Checking for the latest ControllerBuddy release...'
-    JSON=$(curl https://api.github.com/repos/bwRavencl/ControllerBuddy/releases/latest)
+    json=$(curl https://api.github.com/repos/bwRavencl/ControllerBuddy/releases/latest)
     check_retval 'Error: Failed to obtain ControllerBuddy release information from GitHub'
 
-    CB_LATEST_VERSION=$(grep tag_name <<< "$JSON" | cut -d : -f 2 | cut -d - -f 2,3 | tr -d \",' ')
-    if [ -z "$CB_LATEST_VERSION" ]
+    cb_latest_version=$(grep tag_name <<< "$json" | cut -d : -f 2 | cut -d - -f 2,3 | tr -d \",' ')
+    if [ -z "$cb_latest_version" ]
     then
         log 'Error: Failed to determine latest ControllerBuddy version'
         confirm_exit 1
     fi
 
-    if [ "$CB_CURRENT_VERSION" = "$CB_LATEST_VERSION" ]
+    if [ "$cb_current_version" = "$cb_latest_version" ]
     then
-        log "ControllerBuddy $CB_CURRENT_VERSION is up-to-date!"
+        log "ControllerBuddy $cb_current_version is up-to-date!"
         echo
     else
-        log "Downloading ControllerBuddy $CB_LATEST_VERSION..."
+        log "Downloading ControllerBuddy $cb_latest_version..."
         if [ "$OSTYPE" = msys ]
         then
-            GREP_STRING=windows-x86-64
-            CB_ARCHIVE_FILE="$TMP\\ControllerBuddy.zip"
+            grep_string=windows-x86-64
+            cb_archive_file="$TMP\\ControllerBuddy.zip"
         else
-            GREP_STRING=linux-x86-64
-            CB_ARCHIVE_FILE="/tmp/ControllerBuddy.tgz"
+            grep_string=linux-x86-64
+            cb_archive_file="/tmp/ControllerBuddy.tgz"
         fi
-        grep browser_download_url <<< "$JSON" | grep $GREP_STRING | cut -d : -f 2,3 | tr -d \",' ' | xargs -n 1 curl -o "$CB_ARCHIVE_FILE" -L
-        check_retval "Error: Failed to obtain ControllerBuddy $CB_LATEST_VERSION from GitHub"
+        grep browser_download_url <<< "$json" | grep $grep_string | cut -d : -f 2,3 | tr -d \",' ' | xargs -n 1 curl -o "$cb_archive_file" -L
+        check_retval "Error: Failed to obtain ControllerBuddy $cb_latest_version from GitHub"
 
-        if [ -d "$CB_DIR" ]
+        if [ -d "$cb_dir" ]
         then
             remove_controller_buddy
         fi
@@ -573,13 +573,13 @@ else
         log 'Decompressing archive...'
         if [ "$OSTYPE" = msys ]
         then
-            mkdir -p "$CB_PARENT_DIR" && unzip -d "$CB_PARENT_DIR" "$CB_ARCHIVE_FILE"
+            mkdir -p "$cb_parent_dir" && unzip -d "$cb_parent_dir" "$cb_archive_file"
         else
-            mkdir -p "$CB_PARENT_DIR" && tar xzf "$CB_ARCHIVE_FILE" -C "$CB_PARENT_DIR"
+            mkdir -p "$cb_parent_dir" && tar xzf "$cb_archive_file" -C "$cb_parent_dir"
         fi
-        EXTRACTED="$?"
-        rm -rf "$CB_ARCHIVE_FILE"
-        if [ "$EXTRACTED" -eq 0 ]
+        extracted="$?"
+        rm -rf "$cb_archive_file"
+        if [ "$extracted" -eq 0 ]
         then
             log 'Done!'
             echo
@@ -589,30 +589,30 @@ else
         fi
     fi
 
-    create_shortcut ControllerBuddy "$CB_EXE_PATH" '-autostart local -tray' "$CB_DIR"
+    create_shortcut ControllerBuddy "$cb_exe_path" '-autostart local -tray' "$cb_dir"
 
-    if [ -d "$CB_PROFILES_DIR" ]
+    if [ -d "$cb_profiles_dir" ]
     then
         log 'Pulling ControllerBuddy-Profiles repository...'
-        git -C "$CB_PROFILES_DIR" pull origin master
+        git -C "$cb_profiles_dir" pull origin master
         check_retval 'Error: Failed to pull ControllerBuddy-Profiles repository'
     else
         log 'Cloning ControllerBuddy-Profiles repository...'
-        git clone https://github.com/bwRavencl/ControllerBuddy-Profiles.git "$CB_PROFILES_DIR"
+        git clone https://github.com/bwRavencl/ControllerBuddy-Profiles.git "$cb_profiles_dir"
         check_retval 'Error: Failed to clone ControllerBuddy-Profiles repository'
     fi
 
     if [ "$OSTYPE" = msys ]
     then
-        if REG_QUERY_OUTPUT=$(REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS 2>/dev/null)
+        if reg_query_output=$(REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS 2>/dev/null)
         then
-            RUN_CONFIG_SCRIPTS=$(echo "$REG_QUERY_OUTPUT" | awk '{print tolower($3)}' | xargs)
+            run_config_scripts=$(echo "$reg_query_output" | awk '{print tolower($3)}' | xargs)
         fi
 
-        if [ "$RUN_CONFIG_SCRIPTS" != true ] && [ "$RUN_CONFIG_SCRIPTS" != false ]
+        if [ "$run_config_scripts" != true ] && [ "$run_config_scripts" != false ]
         then
             echo The ControllerBuddy-Profiles configuration scripts can automatically configure the input settings of the following applications for usage with the official profiles:
-            find "$CB_PROFILES_DIR/configs" -mindepth 2 -maxdepth 2 -name 'Configure.ps1' | cut -d / -f 3 | tr _ ' ' | xargs -I name echo - name
+            find "$cb_profiles_dir/configs" -mindepth 2 -maxdepth 2 -name 'Configure.ps1' | cut -d / -f 3 | tr _ ' ' | xargs -I name echo - name
             echo
             echo If you plan on using the official profiles, it is recommended to let the scripts make the necessary modifications.
             echo 'Warning: You may want to backup your current input settings now, if you do not want to lose them.'
@@ -620,20 +620,20 @@ else
 
             while true;
             do
-                read -rp 'Would you like to run the ControllerBuddy-Profiles configuration scripts? [yes/no/always/never] ' RESPONSE
-                case $RESPONSE in
+                read -rp 'Would you like to run the ControllerBuddy-Profiles configuration scripts? [yes/no/always/never] ' response
+                case $response in
                     always)
                         add_environment_variable CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS true
                         ;&
                     [Yy]*)
-                        RUN_CONFIG_SCRIPTS=true
+                        run_config_scripts=true
                         break
                         ;;
                     never)
                         add_environment_variable CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS false
                         ;&
                     [Nn]*)
-                        RUN_CONFIG_SCRIPTS=false
+                        run_config_scripts=false
                         break
                         ;;
                     *)
@@ -644,53 +644,53 @@ else
             done
         fi
 
-        if [ "$RUN_CONFIG_SCRIPTS" = true ]
+        if [ "$run_config_scripts" = true ]
         then
             log 'Running ControllerBuddy-Profiles configuration scripts...'
-            find "$CB_PROFILES_DIR\\configs" -mindepth 2 -maxdepth 2 -name 'Configure.ps1' -exec sh -c 'echo ; powershell -ExecutionPolicy Bypass -File "$1"' shell {} \;
+            find "$cb_profiles_dir\\configs" -mindepth 2 -maxdepth 2 -name 'Configure.ps1' -exec sh -c 'echo ; powershell -ExecutionPolicy Bypass -File "$1"' shell {} \;
             log 'Done!'
             echo
         fi
 
-        install_dcs_integration "$DCS_STABLE_USER_DIR"
-        install_dcs_integration "$DCS_OPEN_BETA_USER_DIR"
+        install_dcs_integration "$dcs_stable_user_dir"
+        install_dcs_integration "$dcs_open_beta_user_dir"
     fi
 
-    SCRIPT_PATH="$CB_BIN_DIR/$SCRIPT_NAME"
+    script_path="$cb_bin_dir/$script_name"
 
-    if [ ! "$(dirname "${BASH_SOURCE[0]}")" -ef "$CB_BIN_DIR" ]
+    if [ ! "$(dirname "${BASH_SOURCE[0]}")" -ef "$cb_bin_dir" ]
     then
-        log "Updating local copy of $SCRIPT_NAME..."
-        cp "${BASH_SOURCE[0]}" "$SCRIPT_PATH"
-        check_retval "Error: Failed to copy $SCRIPT_NAME to $SCRIPT_PATH"
+        log "Updating local copy of $script_name..."
+        cp "${BASH_SOURCE[0]}" "$script_path"
+        check_retval "Error: Failed to copy $script_name to $script_path"
     fi
 
     if [ "$OSTYPE" = msys ]
     then
-        SCRIPT_COMMAND="$SCRIPT_PATH"
-        SCRIPT_WORK_DIR=%TMP%
+        script_command="$script_path"
+        script_work_dir=%TMP%
     else
-        SCRIPT_COMMAND="/bin/bash $SCRIPT_PATH"
-        SCRIPT_WORK_DIR=/tmp
+        script_command="/bin/bash $script_path"
+        script_work_dir=/tmp
     fi
-    create_shortcut 'Update ControllerBuddy' "$SCRIPT_COMMAND" '' "$SCRIPT_WORK_DIR"
-    create_shortcut 'Uninstall ControllerBuddy' "$SCRIPT_COMMAND" uninstall "$SCRIPT_WORK_DIR"
+    create_shortcut 'Update ControllerBuddy' "$script_command" '' "$script_work_dir"
+    create_shortcut 'Uninstall ControllerBuddy' "$script_command" uninstall "$script_work_dir"
 
-    if [ "$RESTART" = true ]
+    if [ "$restart" = true ]
     then
         log 'Launching ControllerBuddy...'
         if [ "$OSTYPE" = msys ]
         then
-            start //B "" "$CB_EXE_PATH" '-autostart' 'local' '-tray' &
+            start //B "" "$cb_exe_path" '-autostart' 'local' '-tray' &
         else
-            nohup "$CB_EXE_PATH" -autostart local -tray >/dev/null 2>/dev/null &
+            nohup "$cb_exe_path" -autostart local -tray >/dev/null 2>/dev/null &
         fi
     fi
 fi
 
 log 'All done! Have a nice day!'
 
-if [ "$AUTO_EXIT" = true ] && [ "$REBOOT_REQUIRED" != true ]
+if [ "$auto_exit" = true ] && [ "$reboot_required" != true ]
 then
     for i in $(seq 5 -1 1)
     do
