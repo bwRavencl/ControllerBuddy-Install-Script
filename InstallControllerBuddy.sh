@@ -117,29 +117,148 @@ function check_retval() {
     fi
 }
 
+function check_sudo_privileges() {
+if [ "$has_sudo_privileges" != true ]
+then
+    if ! which sudo >/dev/null 2>/dev/null
+    then
+        log 'Error: sudo is not installed. Please restart this script after manually installing sudo.'
+        confirm_exit 1
+    fi
+
+    if sudo -v
+    then
+        has_sudo_privileges=true
+    else
+        log 'Error: User does not have sudo privileges. Please restart this script after manually adding the necessary permissions.'
+        confirm_exit 1
+    fi
+fi
+}
+
+function install_package() {
+if which apt-get >/dev/null 2>/dev/null
+then
+    check_sudo_privileges
+    sudo -- sh -c "apt-get update && apt-get install -y $1"
+elif which yum >/dev/null 2>/dev/null
+then
+    check_sudo_privileges
+    sudo yum -y install "$2"
+elif which pacman >/dev/null 2>/dev/null
+then
+    check_sudo_privileges
+    sudo pacman -S --noconfirm "$3"
+elif which zypper >/dev/null 2>/dev/null
+then
+    check_sudo_privileges
+    sudo zypper --non-interactive install "$4"
+else
+    false
+fi
+}
+
 if [ "$1" = uninstall ]
 then
     uninstall=true
 else
+    if [ "$OSTYPE" != msys ]
+    then
+        log 'Checking if GnuPG is installed...'
+        if which gpg >/dev/null 2>/dev/null
+        then
+            log 'Yes'
+        else
+            log 'No - installing GnuPG...'
+            install_package 'gnupg' 'gnupg2' 'gnupg' 'gpg2'
+            check_retval 'Error: Failed to install GnuPG. Please restart this script after manually installing GnuPG.'
+        fi
+        echo
+    fi
+
     log 'Checking for the latest install script...'
-    tmp_install_script_file=$(mktemp)
-    if curl -o "$tmp_install_script_file" -L https://raw.githubusercontent.com/bwRavencl/ControllerBuddy-Install-Script/master/InstallControllerBuddy.sh
+    install_script_url=https://raw.githubusercontent.com/bwRavencl/ControllerBuddy-Install-Script/master/InstallControllerBuddy.sh
+    if tmp_install_script_file=$(mktemp) && curl -o "$tmp_install_script_file" -L "$install_script_url"
     then
         if cmp -s "${BASH_SOURCE[0]}" "$tmp_install_script_file"
         then
-            log 'Install script is up-to-date!'
-            rm -f "$tmp_install_script_file"
+            log 'Install script is already up-to-date!'
+            echo
         else
-            log 'Updating and restarting install script...'
-            bash -c "mv '$tmp_install_script_file' '${BASH_SOURCE[0]}' && chmod +x '${BASH_SOURCE[0]}' && exec '${BASH_SOURCE[0]}' $1"
-            check_retval 'Error: Failed to update and restart install script'
-            rm -f "$tmp_install_script_file"
-            exit 0
+            log 'New install script available!'
+            echo
+            if tmp_signature_file=$(mktemp) && curl -o "$tmp_signature_file" -L "$install_script_url.sig"
+            then
+                log 'Verifying signature...'
+                keyring_asc_content=$(cat << 'EOF'
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+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
+v/g=
+=GnJF
+-----END PGP PUBLIC KEY BLOCK-----
+EOF
+)
+                tmp_keyring_file=$(mktemp) && echo "$keyring_asc_content" | gpg --dearmor > "$tmp_keyring_file" 2>/dev/null && gpgv --keyring "$tmp_keyring_file" "$tmp_signature_file" "$tmp_install_script_file" >/dev/null 2>/dev/null
+                check_retval 'Error: Bad signature for new install script'
+                rm -f "$tmp_signature_file" "$tmp_keyring_file"
+                log 'Updating and restarting install script...'
+                bash -c "mv '$tmp_install_script_file' '${BASH_SOURCE[0]}' && chmod +x '${BASH_SOURCE[0]}' && exec '${BASH_SOURCE[0]}' $1"
+                check_retval 'Error: Failed to update and restart install script'
+                rm -f "$tmp_install_script_file"
+                exit 0
+            fi
+            rm -f "$tmp_signature_file"
         fi
     else
         log 'Warning: Failed to obtain latest install script from GitHub'
     fi
-    echo
+    rm -f "$tmp_install_script_file"
 fi
 
 function check_vjoy_installed() {
@@ -197,47 +316,6 @@ then
     log 'Removing ControllerBuddy'
     find "$cb_dir" -mindepth 1 -not -name "$script_name" -not -path "$cb_bin_dir" -delete
     check_retval 'Error: Failed to remove ControllerBuddy'
-fi
-}
-
-function check_sudo_privileges() {
-if [ "$has_sudo_privileges" != true ]
-then
-    if ! which sudo >/dev/null 2>/dev/null
-    then
-        log 'Error: sudo is not installed. Please restart this script after manually installing sudo.'
-        confirm_exit 1
-    fi
-
-    if sudo -v
-    then
-        has_sudo_privileges=true
-    else
-        log 'Error: User does not have sudo privileges. Please restart this script after manually adding the necessary permissions.'
-        confirm_exit 1
-    fi
-fi
-}
-
-function install_package() {
-if which apt-get >/dev/null 2>/dev/null
-then
-    check_sudo_privileges
-    sudo -- sh -c "apt-get update && apt-get install -y $1"
-elif which yum >/dev/null 2>/dev/null
-then
-    check_sudo_privileges
-    sudo yum -y install "$2"
-elif which pacman >/dev/null 2>/dev/null
-then
-    check_sudo_privileges
-    sudo pacman -S --noconfirm "$3"
-elif which zypper >/dev/null 2>/dev/null
-then
-    check_sudo_privileges
-    sudo zypper --non-interactive install "$4"
-else
-    false
 fi
 }
 
