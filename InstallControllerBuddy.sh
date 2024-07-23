@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set +o history
-
 : '
 Copyright (C) 2022  Matteo Hausner
 
@@ -18,6 +16,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '
+
+set +o history
 
 cat << 'EOF'
   _____          __           ____        ___          __   __
