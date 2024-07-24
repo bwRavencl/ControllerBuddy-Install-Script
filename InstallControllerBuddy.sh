@@ -106,6 +106,9 @@ then
     confirm_exit 1
 fi
 
+tmp_dir=$(mktemp -d -q)
+trap 'rm -rf $tmp_dir' EXIT
+
 function check_retval() {
     if [ "$?" -eq 0 ]
     then
@@ -158,39 +161,27 @@ else
 fi
 }
 
-if [ "$1" = uninstall ]
+function verify_signature() {
+if [ "$OSTYPE" != msys ]
 then
-    uninstall=true
-else
-    if [ "$OSTYPE" != msys ]
+    log 'Checking if GnuPG is installed...'
+    if which gpg >/dev/null 2>/dev/null
     then
-        log 'Checking if GnuPG is installed...'
-        if which gpg >/dev/null 2>/dev/null
-        then
-            log 'Yes'
-        else
-            log 'No - installing GnuPG...'
-            install_package 'gnupg' 'gnupg2' 'gnupg' 'gpg2'
-            check_retval 'Error: Failed to install GnuPG. Please restart this script after manually installing GnuPG.'
-        fi
-        echo
+        log 'Yes'
+    else
+        log 'No - installing GnuPG...'
+        install_package 'gnupg' 'gnupg2' 'gnupg' 'gpg2'
+        check_retval 'Error: Failed to install GnuPG. Please restart this script after manually installing GnuPG.'
     fi
+    echo
+fi
 
-    log 'Checking for the latest install script...'
-    install_script_url=https://raw.githubusercontent.com/bwRavencl/ControllerBuddy-Install-Script/master/InstallControllerBuddy.sh
-    if tmp_install_script_file=$(mktemp) && curl -o "$tmp_install_script_file" -L "$install_script_url"
-    then
-        if cmp -s "${BASH_SOURCE[0]}" "$tmp_install_script_file"
-        then
-            log 'Install script is already up-to-date!'
-            echo
-        else
-            log 'New install script available!'
-            echo
-            if tmp_signature_file=$(mktemp) && curl -o "$tmp_signature_file" -L "$install_script_url.sig"
-            then
-                log 'Verifying signature...'
-                keyring_asc_content=$(cat << 'EOF'
+log 'Verifying signature...'
+local tmp_signature_file &&
+tmp_signature_file=$(mktemp -p "$tmp_dir" -q) &&
+curl -o "$tmp_signature_file" -L "$2" &&
+local keyring_asc_content &&
+keyring_asc_content=$(cat << 'EOF'
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 
 mQINBFTLqOYBD/9fq4bD86GtCcxYZcBeSLW7ndP5siAvxNm5NGlHBdBftfdv47XD
@@ -243,22 +234,41 @@ v/g=
 =GnJF
 -----END PGP PUBLIC KEY BLOCK-----
 EOF
-)
-                tmp_keyring_file=$(mktemp) && echo "$keyring_asc_content" | gpg --dearmor > "$tmp_keyring_file" 2>/dev/null && gpgv --keyring "$tmp_keyring_file" "$tmp_signature_file" "$tmp_install_script_file" >/dev/null 2>/dev/null
-                check_retval 'Error: Bad signature for new install script'
-                rm -f "$tmp_signature_file" "$tmp_keyring_file"
-                log 'Updating and restarting install script...'
-                bash -c "mv '$tmp_install_script_file' '${BASH_SOURCE[0]}' && chmod +x '${BASH_SOURCE[0]}' && exec '${BASH_SOURCE[0]}' $1"
-                check_retval 'Error: Failed to update and restart install script'
-                rm -f "$tmp_install_script_file"
-                exit 0
-            fi
-            rm -f "$tmp_signature_file"
+) &&
+local tmp_keyring_file &&
+tmp_keyring_file=$(mktemp -p "$tmp_dir" -q) &&
+echo "$keyring_asc_content" | gpg --dearmor > "$tmp_keyring_file" 2>/dev/null &&
+gpgv --keyring "$tmp_keyring_file" "$tmp_signature_file" "$1" >/dev/null 2>/dev/null
+check_retval 'Error: Bad signature'
+}
+
+if [ "$1" = uninstall ]
+then
+    uninstall=true
+else
+    log 'Checking for the latest install script...'
+    if install_script_json=$(curl https://api.github.com/repos/bwRavencl/ControllerBuddy-Install-Script/releases/latest) &&
+        tag_name=$(grep tag_name <<< "$install_script_json" | cut -d : -f 2 | tr -d \",' ') &&
+        install_script_url=https://github.com/bwRavencl/ControllerBuddy-Install-Script/releases/download/$tag_name/InstallControllerBuddy.sh &&
+        tmp_install_script_file=$(mktemp -p "$tmp_dir" -q) &&
+        curl -o "$tmp_install_script_file" -L "$install_script_url"
+    then
+        if cmp -s "${BASH_SOURCE[0]}" "$tmp_install_script_file"
+        then
+            log 'Install script is already up-to-date!'
+            echo
+        else
+            log 'New install script available!'
+            echo
+            verify_signature "$tmp_install_script_file" "$install_script_url.sig"
+            log 'Updating and restarting install script...'
+            bash -c "mv '$tmp_install_script_file' '${BASH_SOURCE[0]}' && chmod +x '${BASH_SOURCE[0]}' && exec '${BASH_SOURCE[0]}' $1"
+            check_retval 'Error: Failed to update and restart install script'
+            exit 0
         fi
     else
         log 'Warning: Failed to obtain latest install script from GitHub'
     fi
-    rm -f "$tmp_install_script_file"
 fi
 
 function check_vjoy_installed() {
@@ -267,7 +277,10 @@ function check_vjoy_installed() {
     vjoy_dir=$(REG QUERY "$vjoy_uninstall_registry_key" //V InstallLocation 2>/dev/null | grep InstallLocation | sed -n -e 's/^.*REG_SZ    //p' | sed 's/\\*$//')
     vjoy_config_exe_path="$vjoy_dir\\x64\\vJoyConfig.exe"
     vjoy_current_version=$(REG QUERY "$vjoy_uninstall_registry_key" //V DisplayVersion 2>/dev/null | grep DisplayVersion | sed -n -e 's/^.*REG_SZ    //p')
-    if [ -n "$vjoy_dir" ] && [ -d "$vjoy_dir" ] && [ -f "$vjoy_config_exe_path" ] && [ "$vjoy_current_version" = "$vjoy_desired_version" ]
+    if [ -n "$vjoy_dir" ] &&
+        [ -d "$vjoy_dir" ] &&
+        [ -f "$vjoy_config_exe_path" ] &&
+        [ "$vjoy_current_version" = "$vjoy_desired_version" ]
     then
         vjoy_installed=true
     fi
@@ -293,7 +306,12 @@ function check_vjoy_configured() {
     vjoy_config_axes=$(get_vjoy_config_value "$vjoy_config" Axes)
     local vjoy_config_ffb_effects
     vjoy_config_ffb_effects=$(get_vjoy_config_value "$vjoy_config" 'FFB Effects')
-    if [ "$vjoy_config_device" = 1 ] && [ "$vjoy_config_buttons" = 128 ] && [ "$vjoy_config_descrete_povs" = 0 ] && [ "$vjoy_config_continuous_povs" = 0 ] && [ "$vjoy_config_axes" = 'X Y Z Rx Ry Rz Sl0 Sl1' ] && [ "$vjoy_config_ffb_effects" = 'None' ]
+    if [ "$vjoy_config_device" = 1 ] &&
+        [ "$vjoy_config_buttons" = 128 ] &&
+        [ "$vjoy_config_descrete_povs" = 0 ] &&
+        [ "$vjoy_config_continuous_povs" = 0 ] &&
+        [ "$vjoy_config_axes" = 'X Y Z Rx Ry Rz Sl0 Sl1' ] &&
+        [ "$vjoy_config_ffb_effects" = 'None' ]
     then
         vjoy_configured=true
     fi
@@ -303,7 +321,8 @@ function remove_controller_buddy() {
 if [ -d "$cb_dir" ]
 then
     log 'Stopping any old ControllerBuddy process...'
-    if { [ "$OSTYPE" = msys ] && taskkill -F -IM $cb_exe >/dev/null 2>/dev/null ; } || { [ "$OSTYPE" = linux-gnu ] && killall ControllerBuddy 2>/dev/null ; }
+    if { [ "$OSTYPE" = msys ] && taskkill -F -IM $cb_exe >/dev/null 2>/dev/null ; } ||
+        { [ "$OSTYPE" = linux-gnu ] && killall ControllerBuddy 2>/dev/null ; }
     then
         log 'Done!'
         sleep 2
@@ -490,12 +509,12 @@ else
         if [ "$vjoy_installed" != true ]
         then
             log "No valid vJoy $vjoy_desired_version installation was found - downloading installer..."
-            vjoy_setup_exe_path="$TMP\\vJoySetup.exe"
-            if curl -o "$vjoy_setup_exe_path" -L https://github.com/jshafer817/vJoy/releases/download/v2.1.9.1/vJoySetup.exe
+            if tmp_vjoy_setup=$(mktemp -p "$tmp_dir" -q --suffix=.exe) &&
+                curl -o "$tmp_vjoy_setup" -L https://github.com/jshafer817/vJoy/releases/download/v2.1.9.1/vJoySetup.exe &&
+                echo "f103ced4e7ff7ccb49c8415a542c56768ed4da4fea252b8f4ffdac343074654a $tmp_vjoy_setup" | sha256sum --check --status
             then
                 log "Installing vJoy $vjoy_desired_version..."
-                "$vjoy_setup_exe_path" //VERYSILENT
-                rm -rf "$vjoy_setup_exe_path"
+                "$tmp_vjoy_setup" //VERYSILENT
                 check_vjoy_installed
             else
                 log 'Error: Failed to obtain vJoy from GitHub'
@@ -616,10 +635,10 @@ else
 
     echo
     log 'Checking for the latest ControllerBuddy release...'
-    json=$(curl https://api.github.com/repos/bwRavencl/ControllerBuddy/releases/latest)
+    cb_json=$(curl https://api.github.com/repos/bwRavencl/ControllerBuddy/releases/latest)
     check_retval 'Error: Failed to obtain ControllerBuddy release information from GitHub'
 
-    cb_latest_version=$(grep tag_name <<< "$json" | cut -d : -f 2 | cut -d - -f 2,3 | tr -d \",' ')
+    cb_latest_version=$(grep tag_name <<< "$cb_json" | cut -d : -f 2 | cut -d - -f 2,3 | tr -d \",' ')
     if [ -z "$cb_latest_version" ]
     then
         log 'Error: Failed to determine latest ControllerBuddy version'
@@ -635,13 +654,17 @@ else
         if [ "$OSTYPE" = msys ]
         then
             grep_string=windows-x86-64
-            cb_archive_file="$TMP\\ControllerBuddy.zip"
         else
             grep_string=linux-x86-64
-            cb_archive_file="/tmp/ControllerBuddy.tgz"
         fi
-        grep browser_download_url <<< "$json" | grep $grep_string | cut -d : -f 2,3 | tr -d \",' ' | xargs -n 1 curl -o "$cb_archive_file" -L
+        archive_url=$(grep browser_download_url <<< "$cb_json" | grep "$grep_string" | grep -v .sig | cut -d : -f 2,3 | tr -d \",' ')
+        check_retval "Error: Failed to determine download URL for $cb_latest_version"
+
+        tmp_archive_file=$(mktemp -p "$tmp_dir" -q) &&
+        curl -o "$tmp_archive_file" -L "$archive_url"
         check_retval "Error: Failed to obtain ControllerBuddy $cb_latest_version from GitHub"
+
+        verify_signature "$tmp_archive_file" "$archive_url.sig"
 
         if [ -d "$cb_dir" ]
         then
@@ -651,13 +674,12 @@ else
         log 'Decompressing archive...'
         if [ "$OSTYPE" = msys ]
         then
-            mkdir -p "$cb_parent_dir" && unzip -d "$cb_parent_dir" "$cb_archive_file"
+            mkdir -p "$cb_parent_dir" && unzip -d "$cb_parent_dir" "$tmp_archive_file"
         else
-            mkdir -p "$cb_parent_dir" && tar xzf "$cb_archive_file" -C "$cb_parent_dir"
+            mkdir -p "$cb_parent_dir" && tar xzf "$tmp_archive_file" -C "$cb_parent_dir"
         fi
-        extracted="$?"
-        rm -rf "$cb_archive_file"
-        if [ "$extracted" -eq 0 ]
+        # shellcheck disable=SC2181
+        if [ "$?" -eq 0 ]
         then
             log 'Done!'
             echo

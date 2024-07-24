@@ -1,0 +1,53 @@
+on:
+  push:
+    branches:
+      - master
+
+env:
+  INSTALL_SCRIPT_FILE: InstallControllerBuddy.sh
+
+jobs:
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@2.0.0
+  release:
+    needs: shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Generate Tag Name
+        id: generate_tag_name
+        shell: bash
+        run: echo "tag_name=${GITHUB_REPOSITORY#*/}-${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
+      - name: Tag Commit
+        uses: tvdias/github-tagger@v0.0.2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ steps.generate_tag_name.outputs.tag_name }}
+      - name: Import GPG Key
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PRIVATE_KEY_PASSPHRASE }}
+      - name: Sign Script
+        id: sign_script
+        shell: bash
+        run: |
+          signature_file="${{ env.INSTALL_SCRIPT_FILE }}.sig"
+          gpg --local-user 8590BB74C0F559F8AC911C1D8058553A1FD36B23 --pinentry-mode loopback --passphrase ${{ secrets.GPG_PRIVATE_KEY_PASSPHRASE }} --detach-sig --output "$signature_file" --yes ${{ env.INSTALL_SCRIPT_FILE }}
+          echo "signature_file=$signature_file" >> $GITHUB_OUTPUT
+      - name: Release
+        id: release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.generate_tag_name.outputs.tag_name }}
+          draft: false
+          prerelease: false
+          files: |
+            ${{ env.INSTALL_SCRIPT_FILE }}
+            ${{ steps.sign_script.outputs.signature_file }}
