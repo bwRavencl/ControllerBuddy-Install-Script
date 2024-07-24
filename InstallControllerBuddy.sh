@@ -246,6 +246,20 @@ if [ "$1" = uninstall ]
 then
     uninstall=true
 else
+    if [ "$OSTYPE" != msys ]
+    then
+        log 'Checking if cURL is installed...'
+        if which curl >/dev/null 2>/dev/null
+        then
+            log 'Yes'
+        else
+            log 'No - installing cURL...'
+            install_package 'curl' 'curl' 'curl' 'curl'
+            check_retval 'Error: Failed to install cURL. Please restart this script after manually installing cURL.'
+        fi
+        echo
+    fi
+
     log 'Checking for the latest install script...'
     if install_script_json=$(curl https://api.github.com/repos/bwRavencl/ControllerBuddy-Install-Script/releases/latest) &&
         tag_name=$(grep tag_name <<< "$install_script_json" | cut -d : -f 2 | tr -d \",' ') &&
@@ -545,16 +559,6 @@ else
             confirm_exit 1
         fi
     else
-        log 'Checking if cURL is installed...'
-        if which curl >/dev/null 2>/dev/null
-        then
-            log 'Yes'
-        else
-            log 'No - installing cURL...'
-            install_package 'curl' 'curl' 'curl' 'curl'
-            check_retval 'Error: Failed to install cURL. Please restart this script after manually installing cURL.'
-        fi
-
         log 'Checking if libSDL2 is installed...'
         if which ldconfig >/dev/null 2>/dev/null
         then
