@@ -718,8 +718,9 @@ else
             echo The ControllerBuddy-Profiles configuration scripts can automatically configure the input settings of the following applications for usage with the official profiles:
             find "$cb_profiles_dir/configs" -mindepth 2 -maxdepth 2 -name 'Configure.ps1' | cut -d / -f 3 | tr _ ' ' | xargs -I name echo - name
             echo
-            echo If you plan on using the official profiles, it is recommended to let the scripts make the necessary modifications.
+            echo If you plan to use the official profiles, it is recommended that you let the scripts make the necessary changes.
             echo 'Warning: You may want to backup your current input settings now, if you do not want to lose them.'
+            echo Note: If you answer 'always', all scripts will be executed from now on whenever ControllerBuddy is updated, without individual prompts.
             echo
 
             while true;
@@ -728,6 +729,7 @@ else
                 case $response in
                     always)
                         add_environment_variable CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS true
+                        export CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS=true
                         ;&
                     [Yy]*)
                         run_config_scripts=true
@@ -751,7 +753,31 @@ else
         if [ "$run_config_scripts" = true ]
         then
             log 'Running ControllerBuddy-Profiles configuration scripts...'
-            find "$cb_profiles_dir\\configs" -mindepth 2 -maxdepth 2 -name 'Configure.ps1' -exec sh -c 'echo ; powershell -ExecutionPolicy Bypass -File "$1"' shell {} \;
+            find "$cb_profiles_dir/configs" -mindepth 2 -maxdepth 2 -name 'Configure.ps1' -exec sh -c "\
+            if [ \"\$CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS\" != true ]
+            then
+                echo
+                while true;
+                do
+                    read -rp \"Would you like to run the configuration script for \$(echo \"\$1\" | cut -d / -f 3 | tr _ ' ')? [yes/no] \" response
+                    case \$response in
+                        [Yy]*)
+                            break
+                            ;;
+                        [Nn]*)
+                            exit
+                            ;;
+                        *)
+                            echo \"Invalid input. Please answer with 'yes' or 'no'.\"
+                            echo
+                            ;;
+                    esac
+                done
+            fi
+            echo
+            powershell -ExecutionPolicy Bypass -File \"\$1\"\
+            " shell {} \;
+
             log 'Done!'
             echo
         fi
