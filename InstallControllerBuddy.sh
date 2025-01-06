@@ -121,67 +121,67 @@ function check_retval() {
 }
 
 function check_sudo_privileges() {
-if [ "$has_sudo_privileges" != true ]
-then
-    if ! which sudo >/dev/null 2>/dev/null
+    if [ "$has_sudo_privileges" != true ]
     then
-        log 'Error: sudo is not installed. Please restart this script after manually installing sudo.'
-        confirm_exit 1
-    fi
+        if ! which sudo >/dev/null 2>/dev/null
+        then
+            log 'Error: sudo is not installed. Please restart this script after manually installing sudo.'
+            confirm_exit 1
+        fi
 
-    if sudo -v
-    then
-        has_sudo_privileges=true
-    else
-        log 'Error: User does not have sudo privileges. Please restart this script after manually adding the necessary permissions.'
-        confirm_exit 1
+        if sudo -v
+        then
+            has_sudo_privileges=true
+        else
+            log 'Error: User does not have sudo privileges. Please restart this script after manually adding the necessary permissions.'
+            confirm_exit 1
+        fi
     fi
-fi
 }
 
 function install_package() {
-if which apt-get >/dev/null 2>/dev/null
-then
-    check_sudo_privileges
-    sudo -- sh -c "apt-get update && apt-get install -y $1"
-elif which yum >/dev/null 2>/dev/null
-then
-    check_sudo_privileges
-    sudo yum -y install "$2"
-elif which pacman >/dev/null 2>/dev/null
-then
-    check_sudo_privileges
-    sudo pacman -S --noconfirm "$3"
-elif which zypper >/dev/null 2>/dev/null
-then
-    check_sudo_privileges
-    sudo zypper --non-interactive install "$4"
-else
-    false
-fi
+    if which apt-get >/dev/null 2>/dev/null
+    then
+        check_sudo_privileges
+        sudo -- sh -c "apt-get update && apt-get install -y $1"
+    elif which yum >/dev/null 2>/dev/null
+    then
+        check_sudo_privileges
+        sudo yum -y install "$2"
+    elif which pacman >/dev/null 2>/dev/null
+    then
+        check_sudo_privileges
+        sudo pacman -S --noconfirm "$3"
+    elif which zypper >/dev/null 2>/dev/null
+    then
+        check_sudo_privileges
+        sudo zypper --non-interactive install "$4"
+    else
+        false
+    fi
 }
 
 function verify_signature() {
-if [ "$OSTYPE" != msys ]
-then
-    log 'Checking if GnuPG is installed...'
-    if which gpg >/dev/null 2>/dev/null
+    if [ "$OSTYPE" != msys ]
     then
-        log 'Yes'
-    else
-        log 'No - installing GnuPG...'
-        install_package 'gnupg' 'gnupg2' 'gnupg' 'gpg2'
-        check_retval 'Error: Failed to install GnuPG. Please restart this script after manually installing GnuPG.'
+        log 'Checking if GnuPG is installed...'
+        if which gpg >/dev/null 2>/dev/null
+        then
+            log 'Yes'
+        else
+            log 'No - installing GnuPG...'
+            install_package 'gnupg' 'gnupg2' 'gnupg' 'gpg2'
+            check_retval 'Error: Failed to install GnuPG. Please restart this script after manually installing GnuPG.'
+        fi
+        echo
     fi
-    echo
-fi
 
-log 'Verifying signature...'
-local tmp_signature_file &&
-tmp_signature_file=$(mktemp -p "$tmp_dir" -q) &&
-curl -o "$tmp_signature_file" -L "$2" &&
-local keyring_asc_content &&
-keyring_asc_content=$(cat << 'EOF'
+    log 'Verifying signature...'
+    local tmp_signature_file &&
+    tmp_signature_file=$(mktemp -p "$tmp_dir" -q) &&
+    curl -o "$tmp_signature_file" -L "$2" &&
+    local keyring_asc_content &&
+    keyring_asc_content=$(cat << 'EOF'
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 
 mQINBFTLqOYBD/9fq4bD86GtCcxYZcBeSLW7ndP5siAvxNm5NGlHBdBftfdv47XD
@@ -234,12 +234,12 @@ v/g=
 =GnJF
 -----END PGP PUBLIC KEY BLOCK-----
 EOF
-) &&
-local tmp_keyring_file &&
-tmp_keyring_file=$(mktemp -p "$tmp_dir" -q) &&
-echo "$keyring_asc_content" | gpg --dearmor > "$tmp_keyring_file" 2>/dev/null &&
-gpgv --keyring "$tmp_keyring_file" "$tmp_signature_file" "$1" >/dev/null 2>/dev/null
-check_retval 'Error: Bad signature'
+    ) &&
+    local tmp_keyring_file &&
+    tmp_keyring_file=$(mktemp -p "$tmp_dir" -q) &&
+    echo "$keyring_asc_content" | gpg --dearmor > "$tmp_keyring_file" 2>/dev/null &&
+    gpgv --keyring "$tmp_keyring_file" "$tmp_signature_file" "$1" >/dev/null 2>/dev/null
+    check_retval 'Error: Bad signature'
 }
 
 if [ "$1" = uninstall ]
@@ -300,7 +300,7 @@ function check_vjoy_installed() {
     fi
 }
 
-function  get_vjoy_config_value() {
+function get_vjoy_config_value() {
     grep "$2" <<< "$1" | cut -d : -f 2 | sed 's/^[ \t]*//;s/[ \t]*$//' | xargs
 }
 
@@ -332,69 +332,69 @@ function check_vjoy_configured() {
 }
 
 function remove_controller_buddy() {
-if [ -d "$cb_dir" ]
-then
-    log 'Stopping any old ControllerBuddy process...'
-    if { [ "$OSTYPE" = msys ] && taskkill -F -IM $cb_exe >/dev/null 2>/dev/null ; } ||
-        { [ "$OSTYPE" = linux-gnu ] && killall ControllerBuddy 2>/dev/null ; }
+    if [ -d "$cb_dir" ]
     then
-        log 'Done!'
-        sleep 2
-        if [ "$uninstall" != true ]
+        log 'Stopping any old ControllerBuddy process...'
+        if { [ "$OSTYPE" = msys ] && taskkill -F -IM $cb_exe >/dev/null 2>/dev/null ; } ||
+            { [ "$OSTYPE" = linux-gnu ] && killall ControllerBuddy 2>/dev/null ; }
         then
-            restart=true
+            log 'Done!'
+            sleep 2
+            if [ "$uninstall" != true ]
+            then
+                restart=true
+            fi
         fi
-    fi
 
-    log 'Removing ControllerBuddy'
-    find "$cb_dir" -mindepth 1 -not -name "$script_name" -not -path "$cb_bin_dir" -delete
-    check_retval 'Error: Failed to remove ControllerBuddy'
-fi
+        log 'Removing ControllerBuddy'
+        find "$cb_dir" -mindepth 1 -not -name "$script_name" -not -path "$cb_bin_dir" -delete
+        check_retval 'Error: Failed to remove ControllerBuddy'
+    fi
 }
 
 function add_line_if_missing() {
-if [ ! -f "$1" ] || ! grep -qxF "$2" "$1"
-then
-    log "Adding missing line '$2' to file '$1'..."
-    check_sudo_privileges
-    echo "$2" | sudo tee -a "$1" >/dev/null 2>/dev/null
-    check_retval "Error: Failed to write $1"
-    reboot_required=true
-fi
+    if [ ! -f "$1" ] || ! grep -qxF "$2" "$1"
+    then
+        log "Adding missing line '$2' to file '$1'..."
+        check_sudo_privileges
+        echo "$2" | sudo tee -a "$1" >/dev/null 2>/dev/null
+        check_retval "Error: Failed to write $1"
+        reboot_required=true
+    fi
 }
 
 function create_shortcut() {
-if [ "$OSTYPE" = msys ]
-then
-    local shortcut_path="$cb_shortcuts_dir\\$1.lnk"
-else
-    local shortcut_path="$cb_shortcuts_dir/$1.desktop"
-fi
-
-if [ ! -f "$shortcut_path" ]
-then
-    log "Creating '$1' shortcut..."
     if [ "$OSTYPE" = msys ]
     then
-        mkdir -p "$cb_shortcuts_dir" && create-shortcut --arguments "$3" --work-dir "$4" "$2" "$shortcut_path"
+        local shortcut_path="$cb_shortcuts_dir\\$1.lnk"
     else
-        local exec_value=$2
-        if [ -n "$3" ]
-        then
-            exec_value="$exec_value $3"
-        fi
-        if [ "$1" = ControllerBuddy ]
-        then
-            local icon_value="$cb_lib_dir/ControllerBuddy.png"
-            local terminal_value=false
-        else
-            local icon_value='text-x-script'
-            local terminal_value=true
-        fi
-        mkdir -p "$cb_shortcuts_dir" && echo -e "[Desktop Entry]\nType=Application\nName=$1\nIcon=$icon_value\nExec=$exec_value\nPath=$4\nTerminal=$terminal_value\nCategories=Game" >> "$shortcut_path"
+        local shortcut_path="$cb_shortcuts_dir/$1.desktop"
     fi
-    check_retval "Error: Failed to create '$1' shortcut"
-fi
+
+    if [ ! -f "$shortcut_path" ]
+    then
+        log "Creating '$1' shortcut..."
+        if [ "$OSTYPE" = msys ]
+        then
+            mkdir -p "$cb_shortcuts_dir" && create-shortcut --arguments "$3" --work-dir "$4" "$2" "$shortcut_path"
+        else
+            local exec_value=$2
+            if [ -n "$3" ]
+            then
+                exec_value="$exec_value $3"
+            fi
+            if [ "$1" = ControllerBuddy ]
+            then
+                local icon_value="$cb_lib_dir/ControllerBuddy.png"
+                local terminal_value=false
+            else
+                local icon_value='text-x-script'
+                local terminal_value=true
+            fi
+            mkdir -p "$cb_shortcuts_dir" && echo -e "[Desktop Entry]\nType=Application\nName=$1\nIcon=$icon_value\nExec=$exec_value\nPath=$4\nTerminal=$terminal_value\nCategories=Game" >> "$shortcut_path"
+        fi
+        check_retval "Error: Failed to create '$1' shortcut"
+    fi
 }
 
 function add_environment_variable() {
@@ -404,69 +404,69 @@ function add_environment_variable() {
 }
 
 function install_dcs_integration() {
-if [ -d "$1" ]
-then
-    log "Found DCS World user directory $1"
-    local dcs_scirpts_dir="$1\\Scripts"
-
-    local cb_dcs_integration_dir="$dcs_scirpts_dir\\ControllerBuddy-DCS-Integration"
-    if [ -d "$cb_dcs_integration_dir" ]
+    if [ -d "$1" ]
     then
+        log "Found DCS World user directory $1"
+        local dcs_scirpts_dir="$1\\Scripts"
+
+        local cb_dcs_integration_dir="$dcs_scirpts_dir\\ControllerBuddy-DCS-Integration"
+        if [ -d "$cb_dcs_integration_dir" ]
+        then
+            if [ "$uninstall" = true ]
+            then
+                rm -rf "$cb_dcs_integration_dir"
+            else
+                log 'Pulling ControllerBuddy-DCS-Integration repository...'
+                git -C "$cb_dcs_integration_dir" pull origin master
+                check_retval 'Error: Failed to pull ControllerBuddy-DCS-Integration repository'
+            fi
+        elif [ "$uninstall" != true ]
+        then
+            log 'Cloning ControllerBuddy-DCS-Integration repository...'
+            git clone https://github.com/bwRavencl/ControllerBuddy-DCS-Integration.git "$cb_dcs_integration_dir"
+            check_retval 'Error: Failed to clone ControllerBuddy-DCS-Integration repository'
+        fi
+
+        local export_lua_path="$dcs_scirpts_dir\\Export.lua"
+        log "Updating $export_lua_path for ControllerBuddy-DCS-Integration"
         if [ "$uninstall" = true ]
         then
-            rm -rf "$cb_dcs_integration_dir"
+            sed -i "/\ControllerBuddy\b/d" "$export_lua_path"
+            check_retval "Error: Failed to remove ControllerBuddy-DCS-Integration from $export_lua_path"
         else
-            log 'Pulling ControllerBuddy-DCS-Integration repository...'
-            git -C "$cb_dcs_integration_dir" pull origin master
-            check_retval 'Error: Failed to pull ControllerBuddy-DCS-Integration repository'
+            touch -a "$export_lua_path"
+            local export_lua_line='dofile(lfs.writedir()..[[Scripts\ControllerBuddy-DCS-Integration\ControllerBuddy.lua]])'
+            # shellcheck disable=SC1003
+            grep -qxF "$export_lua_line" "$export_lua_path" || { sed -i '$a\' "$export_lua_path" && echo "$export_lua_line" >> "$export_lua_path" && unix2dos -q "$export_lua_path" ; }
+            check_retval "Error: Failed to add ControllerBuddy-DCS-Integration to $export_lua_path"
         fi
-    elif [ "$uninstall" != true ]
-    then
-        log 'Cloning ControllerBuddy-DCS-Integration repository...'
-        git clone https://github.com/bwRavencl/ControllerBuddy-DCS-Integration.git "$cb_dcs_integration_dir"
-        check_retval 'Error: Failed to clone ControllerBuddy-DCS-Integration repository'
-    fi
 
-    local export_lua_path="$dcs_scirpts_dir\\Export.lua"
-    log "Updating $export_lua_path for ControllerBuddy-DCS-Integration"
-    if [ "$uninstall" = true ]
-    then
-        sed -i "/\ControllerBuddy\b/d" "$export_lua_path"
-        check_retval "Error: Failed to remove ControllerBuddy-DCS-Integration from $export_lua_path"
-    else
-        touch -a "$export_lua_path"
-        local export_lua_line='dofile(lfs.writedir()..[[Scripts\ControllerBuddy-DCS-Integration\ControllerBuddy.lua]])'
-        # shellcheck disable=SC1003
-        grep -qxF "$export_lua_line" "$export_lua_path" || { sed -i '$a\' "$export_lua_path" && echo "$export_lua_line" >> "$export_lua_path" && unix2dos -q "$export_lua_path" ; }
-        check_retval "Error: Failed to add ControllerBuddy-DCS-Integration to $export_lua_path"
-    fi
-
-    if REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_EXECUTABLE >/dev/null 2>/dev/null
-    then
-        if [ "$uninstall" = true ]
+        if REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_EXECUTABLE >/dev/null 2>/dev/null
         then
-            log 'Removing CONTROLLER_BUDDY_EXECUTABLE environment variable...'
-            REG DELETE 'HKCU\Environment' //F //V CONTROLLER_BUDDY_EXECUTABLE
-            check_retval 'Error: Failed to remove CONTROLLER_BUDDY_EXECUTABLE environment variable'
-        fi
-    elif [ "$uninstall" != true ]
-    then
-        add_environment_variable CONTROLLER_BUDDY_EXECUTABLE "$cb_exe_path"
-    fi
-
-    if REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_PROFILES_DIR >/dev/null 2>/dev/null
-    then
-        if [ "$uninstall" = true ]
+            if [ "$uninstall" = true ]
+            then
+                log 'Removing CONTROLLER_BUDDY_EXECUTABLE environment variable...'
+                REG DELETE 'HKCU\Environment' //F //V CONTROLLER_BUDDY_EXECUTABLE
+                check_retval 'Error: Failed to remove CONTROLLER_BUDDY_EXECUTABLE environment variable'
+            fi
+        elif [ "$uninstall" != true ]
         then
-            log 'Removing CONTROLLER_BUDDY_PROFILES_DIR environment variable...'
-            REG DELETE 'HKCU\Environment' //F //V CONTROLLER_BUDDY_PROFILES_DIR
-            check_retval 'Error: Failed to remove CONTROLLER_BUDDY_PROFILES_DIR environment variable'
+            add_environment_variable CONTROLLER_BUDDY_EXECUTABLE "$cb_exe_path"
         fi
-    elif [ "$uninstall" != true ]
-    then
-        add_environment_variable CONTROLLER_BUDDY_PROFILES_DIR "$cb_profiles_dir"
+
+        if REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_PROFILES_DIR >/dev/null 2>/dev/null
+        then
+            if [ "$uninstall" = true ]
+            then
+                log 'Removing CONTROLLER_BUDDY_PROFILES_DIR environment variable...'
+                REG DELETE 'HKCU\Environment' //F //V CONTROLLER_BUDDY_PROFILES_DIR
+                check_retval 'Error: Failed to remove CONTROLLER_BUDDY_PROFILES_DIR environment variable'
+            fi
+        elif [ "$uninstall" != true ]
+        then
+            add_environment_variable CONTROLLER_BUDDY_PROFILES_DIR "$cb_profiles_dir"
+        fi
     fi
-fi
 }
 
 if [ "$uninstall" = true ]
