@@ -331,6 +331,14 @@ function check_vjoy_configured() {
     fi
 }
 
+function check_cb_installed_version {
+    if [ -d "$cb_dir" ]
+    then
+        cb_installed_version=$(find "$cb_app_dir" -iname 'controllerbuddy-*.jar' -maxdepth 2 -print0 2>/dev/null | xargs -0 -I filename basename -s .jar filename | cut -d - -f 2,3)
+        auto_exit=true
+    fi
+}
+
 function remove_controller_buddy() {
     if [ -d "$cb_dir" ]
     then
@@ -631,12 +639,6 @@ else
         add_line_if_missing '/etc/modules-load.d/uinput.conf' 'uinput'
     fi
 
-    if [ -d "$cb_dir" ]
-    then
-        cb_current_version=$(find "$cb_app_dir" -iname 'controllerbuddy-*.jar' -maxdepth 2 -print0 2>/dev/null | xargs -0 -I filename basename -s .jar filename | cut -d - -f 2,3)
-        auto_exit=true
-    fi
-
     echo
     log 'Checking for the latest ControllerBuddy release...'
     cb_json=$(curl https://api.github.com/repos/bwRavencl/ControllerBuddy/releases/latest)
@@ -649,9 +651,11 @@ else
         confirm_exit 1
     fi
 
-    if [ "$cb_current_version" = "$cb_latest_version" ]
+    check_cb_installed_version
+
+    if [ "$cb_installed_version" = "$cb_latest_version" ]
     then
-        log "ControllerBuddy $cb_current_version is up-to-date!"
+        log "ControllerBuddy $cb_installed_version is up-to-date!"
         echo
     else
         log "Downloading ControllerBuddy $cb_latest_version..."
@@ -695,14 +699,25 @@ else
 
     create_shortcut ControllerBuddy "$cb_exe_path" '-autostart local -tray' "$cb_dir"
 
+    check_cb_installed_version
+    if [ -z "$cb_latest_version" ]
+    then
+        log 'Error: Failed to determine installed ControllerBuddy version'
+        confirm_exit 1
+    fi
+
+    cb_profiles_branch=$(cut -d '.' -f -2 <<< "$cb_installed_version")
+
     if [ -d "$cb_profiles_dir" ]
     then
         log 'Pulling ControllerBuddy-Profiles repository...'
-        git -C "$cb_profiles_dir" pull origin master
+        git -C "$cb_profiles_dir" fetch origin &&
+        git -C "$cb_profiles_dir" checkout "$cb_profiles_branch" &&
+        git -C "$cb_profiles_dir" pull origin "$cb_profiles_branch"
         check_retval 'Error: Failed to pull ControllerBuddy-Profiles repository'
     else
         log 'Cloning ControllerBuddy-Profiles repository...'
-        git clone https://github.com/bwRavencl/ControllerBuddy-Profiles.git "$cb_profiles_dir"
+        git clone https://github.com/bwRavencl/ControllerBuddy-Profiles.git "$cb_profiles_dir" --branch "$cb_profiles_branch"
         check_retval 'Error: Failed to clone ControllerBuddy-Profiles repository'
     fi
 
