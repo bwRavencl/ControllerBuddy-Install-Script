@@ -22,7 +22,6 @@ jobs:
         uses: actions/checkout@v4
       - name: Generate Tag Name
         id: generate_tag_name
-        shell: bash
         run: echo "tag_name=${GITHUB_REPOSITORY#*/}-${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
       - name: Tag Commit
         uses: tvdias/github-tagger@v0.0.2
@@ -36,7 +35,6 @@ jobs:
           passphrase: ${{ secrets.GPG_PRIVATE_KEY_PASSPHRASE }}
       - name: Sign Script
         id: sign_script
-        shell: bash
         run: |
           signature_file="${{ env.INSTALL_SCRIPT_FILE }}.sig"
           gpg --local-user 8590BB74C0F559F8AC911C1D8058553A1FD36B23 --pinentry-mode loopback --passphrase ${{ secrets.GPG_PRIVATE_KEY_PASSPHRASE }} --detach-sig --output "$signature_file" --yes ${{ env.INSTALL_SCRIPT_FILE }}
