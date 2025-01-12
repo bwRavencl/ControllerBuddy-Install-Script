@@ -699,7 +699,7 @@ else
     create_shortcut ControllerBuddy "$cb_exe_path" '-autostart local -tray' "$cb_dir"
 
     check_cb_installed_version
-    if [ -z "$cb_latest_version" ]
+    if [ -z "$cb_installed_version" ]
     then
         log 'Error: Failed to determine installed ControllerBuddy version'
         confirm_exit 1
