@@ -20,9 +20,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Generate Tag Name
         id: generate_tag_name
-        run: echo "tag_name=${GITHUB_REPOSITORY#*/}-${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
+        run: |
+          tag_name=$(git describe --long | sed 's/-/./;s/-g/-/')
+          if [ "$(git status --porcelain)" ]
+          then
+            tag_name+='.dirty'
+          fi
+          echo "tag_name=$tag_name" >> $GITHUB_OUTPUT
       - name: Tag Commit
         uses: tvdias/github-tagger@v0.0.2
         with:
