@@ -398,7 +398,7 @@ function create_shortcut() {
                 local icon_value='text-x-script'
                 local terminal_value=true
             fi
-            mkdir -p "$cb_shortcuts_dir" && echo -e "[Desktop Entry]\nType=Application\nName=$1\nIcon=$icon_value\nExec=$exec_value\nPath=$4\nTerminal=$terminal_value\nCategories=Game" >> "$shortcut_path"
+            mkdir -p "$cb_shortcuts_dir" && echo -e "[Desktop Entry]\nType=Application\nName=$1\nIcon=$icon_value\nExec=$exec_value\nPath=$4\nTerminal=$terminal_value\nCategories=Game" > "$shortcut_path"
         fi
         check_retval "Error: Failed to create '$1' shortcut"
     fi
