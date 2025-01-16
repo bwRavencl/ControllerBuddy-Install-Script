@@ -683,7 +683,7 @@ else
         cb_json=$(curl https://api.github.com/repos/bwRavencl/ControllerBuddy/releases/latest)
         check_retval 'Error: Failed to obtain ControllerBuddy release information from GitHub'
 
-        cb_latest_version=$(grep tag_name <<< "$cb_json" | cut -d : -f 2 | cut -d - -f 2,3 | tr -d \",' ')
+        cb_latest_version=$(grep tag_name <<< "$cb_json" | cut -d : -f 2 | tr -d \",' ')
         if [ -z "$cb_latest_version" ]
         then
             log 'Error: Failed to determine latest ControllerBuddy version'
