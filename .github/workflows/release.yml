@@ -51,6 +51,7 @@ jobs:
         id: release
         uses: softprops/action-gh-release@v2
         with:
+          name: ControllerBuddy-Install-Script-${{ steps.generate_tag_name.outputs.tag_name }}
           tag_name: ${{ steps.generate_tag_name.outputs.tag_name }}
           draft: false
           prerelease: false
