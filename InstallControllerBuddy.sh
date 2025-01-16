@@ -664,9 +664,12 @@ else
         else
             grep_string=linux-x86-64
         fi
+
+        log "Determining download URL..."
         archive_url=$(grep browser_download_url <<< "$cb_json" | grep "$grep_string" | grep -v .sig | cut -d : -f 2,3 | tr -d \",' ')
         check_retval "Error: Failed to determine download URL for $cb_latest_version"
 
+        log "Starting download..."
         tmp_archive_file=$(mktemp -p "$tmp_dir" -q) &&
         curl -o "$tmp_archive_file" -L "$archive_url"
         check_retval "Error: Failed to obtain ControllerBuddy $cb_latest_version from GitHub"
