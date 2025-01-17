@@ -60,6 +60,7 @@ script_name=$(basename "${BASH_SOURCE[0]}")
 
 case "$OSTYPE" in
     msys)
+        os=windows
         log_file="$TMP\\InstallControllerBuddy.log"
         vjoy_desired_version='2.1.9.1'
         cb_parent_dir="$LOCALAPPDATA\\Programs"
@@ -75,6 +76,7 @@ case "$OSTYPE" in
         dcs_open_beta_user_dir="$saved_games_dir\\DCS.openbeta"
         ;;
     linux*)
+        os=linux
         log_file="/tmp/InstallControllerBuddy.log"
         cb_parent_dir="$HOME"
         # shellcheck disable=SC2154
@@ -105,15 +107,6 @@ esac
 
 rm -rf "$log_file"
 
-if [ "$(uname -m)" != x86_64 ]
-then
-    log 'Error: This script is intended to be run on x86_64 systems'
-    confirm_exit 1
-fi
-
-tmp_dir=$(mktemp -d -q)
-trap 'rm -rf $tmp_dir' EXIT
-
 function check_retval() {
     if [ "$?" -eq 0 ]
     then
@@ -124,6 +117,19 @@ function check_retval() {
         confirm_exit 1
     fi
 }
+
+log 'Determining system architecture...'
+arch=$(uname -m)
+check_retval 'Error: Failed to determine system architecture'
+
+if ! { [ "$arch" = x86_64 ] || {  [ "$os" = linux ] && [ "$arch" = aarch64 ]; }; }
+then
+    log "Error: This script is not intended to be run on $(tr '[:lower:]' '[:upper:]' <<< ${os:0:1})${os:1} $arch systems"
+    confirm_exit 1
+fi
+
+tmp_dir=$(mktemp -d -q)
+trap 'rm -rf $tmp_dir' EXIT
 
 function check_sudo_privileges() {
     if [ "$has_sudo_privileges" != true ]
@@ -697,19 +703,11 @@ else
             log "ControllerBuddy $cb_installed_version is up-to-date!"
             echo
         else
-            log "Downloading ControllerBuddy $cb_latest_version..."
-            if [ "$OSTYPE" = msys ]
-            then
-                grep_string=windows-x86-64
-            else
-                grep_string=linux-x86-64
-            fi
-
             log "Determining download URL..."
-            archive_url=$(grep browser_download_url <<< "$cb_json" | grep "$grep_string" | grep -v .sig | cut -d : -f 2,3 | tr -d \",' ')
+            archive_url=$(grep browser_download_url <<< "$cb_json" | grep "$os-${arch//_/-}" | grep -v .sig | cut -d : -f 2,3 | tr -d \",' ')
             check_retval "Error: Failed to determine download URL for $cb_latest_version"
 
-            log "Starting download..."
+            log "Downloading ControllerBuddy $cb_latest_version..."
             tmp_archive_file=$(mktemp -p "$tmp_dir" -q) &&
             curl -o "$tmp_archive_file" -L "$archive_url"
             check_retval "Error: Failed to obtain ControllerBuddy $cb_latest_version from GitHub"

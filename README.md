@@ -2,7 +2,7 @@
 
 ## Description
 
-This script streamlines installing and updating [ControllerBuddy](https://controllerbuddy.org) and the official [ControllerBuddy-Profiles](https://github.com/bwRavencl/ControllerBuddy-Profiles) on Windows and Linux x86-64 systems.  
+This script streamlines installing and updating [ControllerBuddy](https://controllerbuddy.org) and the official [ControllerBuddy-Profiles](https://github.com/bwRavencl/ControllerBuddy-Profiles) on Windows x86-64 and Linux (x86-64 and aarch64) systems.  
 It performs the following tasks:
 
 - Checks for the latest version of `InstallControllerBuddy.sh` and updates itself when necessary
