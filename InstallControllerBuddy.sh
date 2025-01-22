@@ -312,6 +312,7 @@ then
         fi
     else
         log 'Warning: Failed to obtain latest install script from GitHub'
+        echo
     fi
 fi
 
@@ -630,6 +631,7 @@ else
                     install_package 'libsdl2-2.0-0' 'SDL2' 'sdl2' 'SDL2'
                     check_retval 'Error: Failed to install libSDL2. Please restart this script after manually installing libSDL2.'
                 fi
+                echo
 
                 log 'Checking if Git is installed...'
                 if which git >/dev/null 2>/dev/null
@@ -640,43 +642,43 @@ else
                     install_package 'git' 'git' 'git' 'git'
                     check_retval 'Error: Failed to install Git. Please restart this script after manually installing Git.'
                 fi
+                echo
             fi
 
-            log "Checking for 'uinput' group..."
-            if getent group uinput >/dev/null
+            log "Checking if the 'controllerbuddy' group exists..."
+            if getent group controllerbuddy >/dev/null
             then
                 log 'Yes'
             else
-                log "No - creating a 'uinput' group"
-                sudo groupadd -f uinput
-                check_retval "Error: Failed to create a 'uinput' group"
+                log "No - creating the 'controllerbuddy' group"
+                sudo groupadd -f controllerbuddy
+                check_retval "Error: Failed to create the 'controllerbuddy' group"
                 reboot_required=true
             fi
+            echo
 
-            log "Checking if user '$USER' is in 'uinput' group..."
-            if id -nGz "$USER" | grep -qzxF uinput
+            log "Checking if user '$USER' is in the 'controllerbuddy' group..."
+            if id -nGz "$USER" | grep -qzxF controllerbuddy
             then
                 log  'Yes'
             else
-                log "No - adding user '$USER' to the 'uinput' group"
-                sudo gpasswd -a "$USER" uinput
-                check_retval "Error: Failed to add user '$USER' to the 'uinput' group"
+                log "No - adding user '$USER' to the 'controllerbuddy' group"
+                sudo gpasswd -a "$USER" controllerbuddy
+                check_retval "Error: Failed to add user '$USER' to the 'controllerbuddy' group"
                 reboot_required=true
             fi
+            echo
 
-            add_line_if_missing '/etc/udev/rules.d/99-input.rules' 'KERNEL=="uinput", SUBSYSTEM=="misc", MODE="0660", GROUP="uinput"'
-
-            add_line_if_missing '/etc/udev/rules.d/99-input.rules' 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="05c4", MODE="0666"'
-            add_line_if_missing '/etc/udev/rules.d/99-input.rules' 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="09cc", MODE="0666"'
-            add_line_if_missing '/etc/udev/rules.d/99-input.rules' 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="0ba0", MODE="0666"'
-            add_line_if_missing '/etc/udev/rules.d/99-input.rules' 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="0ce6", MODE="0666"'
-
+            add_line_if_missing '/etc/udev/rules.d/99-controllerbuddy.rules' 'KERNEL=="uinput", SUBSYSTEM=="misc", MODE="0660", GROUP="controllerbuddy"'
+            add_line_if_missing '/etc/udev/rules.d/99-controllerbuddy.rules' 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="05c4", MODE="0660", GROUP="controllerbuddy"'
+            add_line_if_missing '/etc/udev/rules.d/99-controllerbuddy.rules' 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="09cc", MODE="0660", GROUP="controllerbuddy"'
+            add_line_if_missing '/etc/udev/rules.d/99-controllerbuddy.rules' 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="0ba0", MODE="0660", GROUP="controllerbuddy"'
+            add_line_if_missing '/etc/udev/rules.d/99-controllerbuddy.rules' 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="0ce6", MODE="0660", GROUP="controllerbuddy"'
             add_line_if_missing '/etc/modules-load.d/uinput.conf' 'uinput'
         fi
 
         if [ "$install" != true ] && [ "$reboot_required" != true ]
         then
-            echo
             log 'All done!'
             exit 0
         fi
@@ -684,7 +686,6 @@ else
 
     if [ "$install" = true ]
     then
-        echo
         log 'Checking for the latest ControllerBuddy release...'
         cb_json=$(curl https://api.github.com/repos/bwRavencl/ControllerBuddy/releases/latest)
         check_retval 'Error: Failed to obtain ControllerBuddy release information from GitHub'
