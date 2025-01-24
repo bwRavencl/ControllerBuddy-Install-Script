@@ -651,6 +651,7 @@ else
                 log 'Yes'
             else
                 log "No - creating the 'controllerbuddy' group"
+                check_sudo_privileges
                 sudo groupadd -f controllerbuddy
                 check_retval "Error: Failed to create the 'controllerbuddy' group"
                 reboot_required=true
@@ -663,6 +664,7 @@ else
                 log  'Yes'
             else
                 log "No - adding user '$USER' to the 'controllerbuddy' group"
+                check_sudo_privileges
                 sudo gpasswd -a "$USER" controllerbuddy
                 check_retval "Error: Failed to add user '$USER' to the 'controllerbuddy' group"
                 reboot_required=true
