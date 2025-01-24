@@ -48,4 +48,4 @@ If you wish to remove ControllerBuddy from your system, run `Uninstall Controlle
 
 ## License Information
 
-GNU General Public License v3.0
+[GNU General Public License v3.0](LICENSE)
