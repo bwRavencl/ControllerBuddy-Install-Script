@@ -645,28 +645,29 @@ else
                 echo
             fi
 
-            log "Checking if the 'controllerbuddy' group exists..."
-            if getent group controllerbuddy >/dev/null
+            cb_group=controllerbuddy
+            log "Checking if the '$cb_group' group exists..."
+            if getent group "$cb_group" >/dev/null
             then
                 log 'Yes'
             else
-                log "No - creating the 'controllerbuddy' group"
+                log "No - creating the '$cb_group' group"
                 check_sudo_privileges
-                sudo groupadd -f controllerbuddy
-                check_retval "Error: Failed to create the 'controllerbuddy' group"
+                sudo groupadd -f "$cb_group"
+                check_retval "Error: Failed to create the '$cb_group' group"
                 reboot_required=true
             fi
             echo
 
-            log "Checking if user '$USER' is in the 'controllerbuddy' group..."
-            if id -nGz "$USER" | grep -qzxF controllerbuddy
+            log "Checking if user '$USER' is in the '$cb_group' group..."
+            if id -nGz "$USER" | grep -qzxF "$cb_group"
             then
                 log  'Yes'
             else
-                log "No - adding user '$USER' to the 'controllerbuddy' group"
+                log "No - adding user '$USER' to the '$cb_group' group"
                 check_sudo_privileges
-                sudo gpasswd -a "$USER" controllerbuddy
-                check_retval "Error: Failed to add user '$USER' to the 'controllerbuddy' group"
+                sudo gpasswd -a "$USER" "$cb_group"
+                check_retval "Error: Failed to add user '$USER' to the '$cb_group' group"
                 reboot_required=true
             fi
             echo
