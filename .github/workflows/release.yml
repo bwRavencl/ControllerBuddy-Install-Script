@@ -1,7 +1,6 @@
 on:
   push:
-    branches:
-      - master
+    branches: master
 
 env:
   INSTALL_SCRIPT_FILE: InstallControllerBuddy.sh
