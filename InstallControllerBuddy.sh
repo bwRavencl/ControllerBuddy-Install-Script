@@ -503,6 +503,7 @@ then
         read -rp 'Are you sure you want to uninstall ControllerBuddy? [y/N] ' response
         case $response in
             [Yy]*)
+                echo
                 remove_controller_buddy
 
                 if [ -d "$cb_shortcuts_dir" ]
