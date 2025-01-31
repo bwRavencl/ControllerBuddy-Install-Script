@@ -526,6 +526,9 @@ then
                 fi
 
                 rm -rf "$cb_dir" 2>/dev/null
+
+                log 'All done!'
+                exit 0
                 ;;
             [Nn]* | '')
                 log 'Bye-bye!'
