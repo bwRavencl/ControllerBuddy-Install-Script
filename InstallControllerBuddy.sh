@@ -365,14 +365,14 @@ function remove_controller_buddy() {
         if { [ "$OSTYPE" = msys ] && taskkill -F -IM $cb_exe >/dev/null 2>/dev/null ; } ||
             { [ "$OSTYPE" = linux-gnu ] && killall ControllerBuddy 2>/dev/null ; }
         then
-            log 'Done!'
             sleep 2
             if [ "$uninstall" != true ]
             then
                 restart=true
             fi
         fi
-
+        log 'Done!'
+        echo
         log 'Removing ControllerBuddy'
         find "$cb_dir" -mindepth 1 -not -name "$script_name" -not -path "$cb_bin_dir" -delete
         check_retval 'Error: Failed to remove ControllerBuddy'
