@@ -444,7 +444,7 @@ function install_dcs_integration() {
                 rm -rf "$cb_dcs_integration_dir"
             else
                 log 'Pulling ControllerBuddy-DCS-Integration repository...'
-                git -C "$cb_dcs_integration_dir" pull origin master
+                git -C "$cb_dcs_integration_dir" pull origin master --rebase
                 check_retval 'Error: Failed to pull ControllerBuddy-DCS-Integration repository'
             fi
         elif [ "$uninstall" != true ]
@@ -735,7 +735,7 @@ else
         log 'Pulling ControllerBuddy-Profiles repository...'
         git -C "$cb_profiles_dir" fetch origin &&
         git -C "$cb_profiles_dir" checkout "$cb_profiles_branch" &&
-        git -C "$cb_profiles_dir" pull origin "$cb_profiles_branch"
+        git -C "$cb_profiles_dir" pull origin "$cb_profiles_branch" --rebase
         check_retval 'Error: Failed to pull ControllerBuddy-Profiles repository'
     else
         log 'Cloning ControllerBuddy-Profiles repository...'
