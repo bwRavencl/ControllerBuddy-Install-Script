@@ -584,37 +584,6 @@ else
             confirm_exit 1
         fi
     else
-        log 'Checking if libSDL2 is installed...'
-        if which ldconfig >/dev/null 2>/dev/null
-        then
-            if ldconfig -p | grep -q libSDL2
-            then
-                libsdl2_found=true
-            fi
-        else
-            check_sudo_privileges
-            if sudo which ldconfig >/dev/null 2>/dev/null
-            then
-                if sudo ldconfig -p | grep -q libSDL2
-                then
-                    libsdl2_found=true
-                fi
-            else
-                log "Error: Unable to run ldconfig."
-                confirm_exit 1
-            fi
-        fi
-
-        if [ "$libsdl2_found" = true ]
-        then
-            log 'Yes'
-        else
-            log 'No - installing libSDL2...'
-            install_package 'libsdl2-2.0-0' 'SDL2' 'sdl2' 'SDL2'
-            check_retval 'Error: Failed to install libSDL2. Please restart this script after manually installing libSDL2.'
-        fi
-        echo
-
         log 'Checking if Git is installed...'
         if which git >/dev/null 2>/dev/null
         then
