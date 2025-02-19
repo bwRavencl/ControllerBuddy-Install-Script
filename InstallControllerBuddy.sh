@@ -777,7 +777,7 @@ else
             echo
             powershell -ExecutionPolicy Bypass -File \"\$1\"\
             " shell {} \;)
-            if [ -z "$cb_installed_version" ]
+            if [ -n "$config_scripts_output" ]
             then
                 log "$config_scripts_output"
             fi
