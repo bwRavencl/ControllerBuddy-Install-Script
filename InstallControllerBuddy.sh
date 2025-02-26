@@ -623,10 +623,6 @@ else
         echo
 
         add_line_if_missing '/etc/udev/rules.d/99-controllerbuddy.rules' 'KERNEL=="uinput", SUBSYSTEM=="misc", MODE="0660", GROUP="controllerbuddy"'
-        add_line_if_missing '/etc/udev/rules.d/99-controllerbuddy.rules' 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="05c4", MODE="0660", GROUP="controllerbuddy"'
-        add_line_if_missing '/etc/udev/rules.d/99-controllerbuddy.rules' 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="09cc", MODE="0660", GROUP="controllerbuddy"'
-        add_line_if_missing '/etc/udev/rules.d/99-controllerbuddy.rules' 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="0ba0", MODE="0660", GROUP="controllerbuddy"'
-        add_line_if_missing '/etc/udev/rules.d/99-controllerbuddy.rules' 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="0ce6", MODE="0660", GROUP="controllerbuddy"'
         add_line_if_missing '/etc/modules-load.d/uinput.conf' 'uinput'
     fi
 
