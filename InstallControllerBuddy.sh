@@ -92,6 +92,7 @@ case "$OSTYPE" in
             cb_profiles_dir="$HOME/ControllerBuddy-Profiles"
         fi
         cb_shortcuts_dir="$HOME/.local/share/applications/ControllerBuddy"
+        udev_rules_file=/etc/udev/rules.d/99-controllerbuddy.rules
         ;;
      *)
         log 'Error: This script must either be run in a Git Bash for Windows or a GNU/Linux Bash environment'
@@ -524,6 +525,12 @@ then
 
                     install_dcs_integration "$dcs_stable_user_dir" uninstall
                     install_dcs_integration "$dcs_open_beta_user_dir" uninstall
+                elif [ "$OSTYPE" = linux-gnu ]
+                then
+                    log 'Removing udev rules...'
+                    check_sudo_privileges
+                    sudo rm -rf "$udev_rules_file"
+                    check_retval "Error: Failed to remove udev rules file '$udev_rules_file'"
                 fi
 
                 rm -rf "$cb_dir" 2>/dev/null
@@ -622,7 +629,7 @@ else
         fi
         echo
 
-        add_line_if_missing '/etc/udev/rules.d/99-controllerbuddy.rules' 'KERNEL=="uinput", SUBSYSTEM=="misc", MODE="0660", GROUP="controllerbuddy"'
+        add_line_if_missing "$udev_rules_file" 'KERNEL=="uinput", SUBSYSTEM=="misc", MODE="0660", GROUP="controllerbuddy"'
         add_line_if_missing '/etc/modules-load.d/uinput.conf' 'uinput'
     fi
 
