@@ -610,7 +610,7 @@ else
         else
             log "No - creating the '$cb_group' group"
             check_sudo_privileges
-            sudo groupadd -f "$cb_group"
+            sudo /usr/sbin/groupadd -f "$cb_group"
             check_retval "Error: Failed to create the '$cb_group' group"
             reboot_required=true
         fi
