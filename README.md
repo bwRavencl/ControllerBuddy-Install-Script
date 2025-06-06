@@ -44,7 +44,8 @@ The script performs the following tasks:
 
 Run `Update ControllerBuddy` from the Start menu to get the latest updates for ControllerBuddy and the ControllerBuddy-Profiles.
 
-**Important:** Always make sure that your gamepad is connected before running the script!
+> [!IMPORTANT]
+> Always make sure that your gamepad is connected before running the script!
 
 ## 🗑️ Uninstalling
 
