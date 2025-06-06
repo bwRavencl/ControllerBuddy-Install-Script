@@ -34,9 +34,9 @@ The script performs the following tasks:
       (if unsure use the default options during installation)
 
     - **On Linux:** Make `InstallControllerBuddy.sh` executable with:
-        ```sh
-        chmod +x InstallControllerBuddy.sh
-        ```
+      ```sh
+      chmod +x InstallControllerBuddy.sh
+      ```
 3. Make sure your gamepad is connected
 4. Double-click the downloaded file `InstallControllerBuddy.sh` to start installing / updating
 
