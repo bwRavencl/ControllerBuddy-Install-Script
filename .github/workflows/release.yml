@@ -30,7 +30,7 @@ jobs:
           then
             tag_name+='.dirty'
           fi
-          echo "tag_name=$tag_name" >> $GITHUB_OUTPUT
+          echo "tag_name=$tag_name" >> "$GITHUB_OUTPUT"
       - name: Tag Commit
         uses: tvdias/github-tagger@v0.0.2
         with:
@@ -46,7 +46,7 @@ jobs:
         run: |
           signature_file="${{ env.INSTALL_SCRIPT_FILE }}.sig"
           gpg --local-user 8590BB74C0F559F8AC911C1D8058553A1FD36B23 --pinentry-mode loopback --passphrase ${{ secrets.GPG_PRIVATE_KEY_PASSPHRASE }} --detach-sig --output "$signature_file" --yes ${{ env.INSTALL_SCRIPT_FILE }}
-          echo "signature_file=$signature_file" >> $GITHUB_OUTPUT
+          echo "signature_file=$signature_file" >> "$GITHUB_OUTPUT"
       - name: Release
         id: release
         uses: softprops/action-gh-release@v2
