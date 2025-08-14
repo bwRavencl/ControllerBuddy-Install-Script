@@ -354,7 +354,7 @@ function check_vjoy_configured() {
 function check_cb_installed_version {
     if [ -d "$cb_dir" ]
     then
-        cb_installed_version=$(find "$cb_app_dir" -iname 'controllerbuddy-*.jar' -maxdepth 2 -print0 2>/dev/null | xargs -0 -I filename basename -s .jar filename | cut -d - -f 2,3)
+        cb_installed_version=$(find "$cb_app_dir" -iname 'controllerbuddy-*.jar' -mindepth 2 -maxdepth 2 -print0 2>/dev/null | xargs -0 -I filename basename -s .jar filename | cut -d - -f 2,3)
         auto_exit=true
     fi
 }
