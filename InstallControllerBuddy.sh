@@ -687,6 +687,26 @@ else
 
     create_shortcut ControllerBuddy "$cb_exe_path" '-autostart local -tray' "$cb_dir"
 
+    script_path="$cb_bin_dir/$script_name"
+
+    if [ ! "$(dirname "${BASH_SOURCE[0]}")" -ef "$cb_bin_dir" ]
+    then
+        log "Updating local copy of $script_name..."
+        cp "${BASH_SOURCE[0]}" "$script_path"
+        check_retval "Error: Failed to copy $script_name to $script_path"
+    fi
+
+    if [ "$OSTYPE" = msys ]
+    then
+        script_command="$script_path"
+        script_work_dir=%TMP%
+    else
+        script_command="/bin/bash $script_path"
+        script_work_dir=/tmp
+    fi
+    create_shortcut 'Update ControllerBuddy' "$script_command" '' "$script_work_dir"
+    create_shortcut 'Uninstall ControllerBuddy' "$script_command" uninstall "$script_work_dir"
+
     check_cb_installed_version
     if [ -z "$cb_installed_version" ]
     then
@@ -791,26 +811,6 @@ else
         install_dcs_integration "$dcs_stable_user_dir"
         install_dcs_integration "$dcs_open_beta_user_dir"
     fi
-
-    script_path="$cb_bin_dir/$script_name"
-
-    if [ ! "$(dirname "${BASH_SOURCE[0]}")" -ef "$cb_bin_dir" ]
-    then
-        log "Updating local copy of $script_name..."
-        cp "${BASH_SOURCE[0]}" "$script_path"
-        check_retval "Error: Failed to copy $script_name to $script_path"
-    fi
-
-    if [ "$OSTYPE" = msys ]
-    then
-        script_command="$script_path"
-        script_work_dir=%TMP%
-    else
-        script_command="/bin/bash $script_path"
-        script_work_dir=/tmp
-    fi
-    create_shortcut 'Update ControllerBuddy' "$script_command" '' "$script_work_dir"
-    create_shortcut 'Uninstall ControllerBuddy' "$script_command" uninstall "$script_work_dir"
 
     if [ "$restart" = true ]
     then
