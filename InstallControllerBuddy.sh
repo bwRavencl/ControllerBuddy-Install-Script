@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 set +o history
 
-cat << 'EOF'
+cat << EOF
 ╔═════════════════════════════════════════════════════════════╗
 ║ █▀▀ █▀█ █▀█ ▀█▀ █▀▄ █▀█ █   █   █▀▀ █▀▄ █▀▄ █ █ █▀▄ █▀▄ █ █ ║
 ║ █   █ █ █ █  █  █▀▄ █ █ █   █   █▀▀ █▀▄ █▀▄ █ █ █ █ █ █  █  ║
@@ -187,7 +187,7 @@ function verify_signature() {
     tmp_signature_file=$(mktemp -p "$tmp_dir" -q) &&
     curl -o "$tmp_signature_file" -L "$2" &&
     local keyring_asc_content &&
-    keyring_asc_content=$(cat << 'EOF'
+    keyring_asc_content=$(cat << EOF
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 
 mQINBFTLqOYBD/9fq4bD86GtCcxYZcBeSLW7ndP5siAvxNm5NGlHBdBftfdv47XD
