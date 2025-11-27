@@ -62,7 +62,7 @@ case "$OSTYPE" in
     msys)
         os=windows
         log_file="$TMP\\InstallControllerBuddy.log"
-        vjoy_desired_version='2.1.9.1'
+        vjoy_desired_version='2.2.2.0'
         cb_parent_dir="$LOCALAPPDATA\\Programs"
         cb_dir="$cb_parent_dir\\ControllerBuddy"
         cb_bin_dir="$cb_dir"
@@ -344,7 +344,7 @@ function check_vjoy_configured() {
         [ "$vjoy_config_buttons" = 128 ] &&
         [ "$vjoy_config_descrete_povs" = 0 ] &&
         [ "$vjoy_config_continuous_povs" = 0 ] &&
-        [ "$vjoy_config_axes" = 'X Y Z Rx Ry Rz Sl0 Sl1' ] &&
+        [ "$vjoy_config_axes" = 'X Y Z Rx Ry Rz Sl0 Sl1 - - - - - - - -' ] &&
         [ "$vjoy_config_ffb_effects" = 'None' ]
     then
         vjoy_configured=true
@@ -556,8 +556,8 @@ else
         then
             log "No valid vJoy $vjoy_desired_version installation was found - downloading installer..."
             if tmp_vjoy_setup=$(mktemp -p "$tmp_dir" -q --suffix=.exe) &&
-                curl -o "$tmp_vjoy_setup" -L https://github.com/jshafer817/vJoy/releases/download/v2.1.9.1/vJoySetup.exe &&
-                echo "f103ced4e7ff7ccb49c8415a542c56768ed4da4fea252b8f4ffdac343074654a $tmp_vjoy_setup" | sha256sum --check --status
+                curl -o "$tmp_vjoy_setup" -L https://github.com/BrunnerInnovation/vJoy/releases/download/v2.2.2.0/vJoySetup_v2.2.2.0_Win10_Win11.exe &&
+                echo "ef569a3105cd301b89580f18f60c66b339e95296acf2c0dfcaf4b4bbf8ab68fe $tmp_vjoy_setup" | sha256sum --check --status
             then
                 log "Installing vJoy $vjoy_desired_version..."
                 "$tmp_vjoy_setup" //VERYSILENT
@@ -577,7 +577,7 @@ else
                 log 'Yes'
             else
                 log 'No - starting elevated vJoyConfig process...'
-                powershell -Command "Start-Process '$vjoy_config_exe_path' '1 -f -b 128' -Verb Runas -Wait"
+                powershell -Command "Start-Process '$vjoy_config_exe_path' '1 -f -a x y z rx ry rz sl0 sl1 -b 128 -p 0 -s 0 -e' -Verb Runas -Wait"
                 check_retval 'Error: Failed to start elevated vJoyConfig process'
                 check_vjoy_configured
                 if [ "$vjoy_configured" != true ]
