@@ -109,7 +109,9 @@ function check_retval() {
         echo
     else
         log "$1"
-        confirm_exit 1
+        if [ "${2:-true}" = "true" ]; then
+            confirm_exit 1
+        fi
     fi
 }
 
@@ -438,7 +440,8 @@ function install_dcs_integration() {
         local dcs_scirpts_dir="$1\\Scripts"
 
         local cb_dcs_integration_dir="$dcs_scirpts_dir\\ControllerBuddy-DCS-Integration"
-        if [ -d "$cb_dcs_integration_dir" ]
+        [[ -d "$cb_dcs_integration_dir" ]] && cb_dcs_integration_dir_exists=true || cb_dcs_integration_dir_exists=false
+        if [ "$cb_dcs_integration_dir_exists" = true ]
         then
             if [ "$uninstall" = true ]
             then
@@ -446,7 +449,7 @@ function install_dcs_integration() {
             else
                 log 'Pulling ControllerBuddy-DCS-Integration repository...'
                 git -C "$cb_dcs_integration_dir" pull origin master --rebase
-                check_retval 'Error: Failed to pull ControllerBuddy-DCS-Integration repository'
+                check_retval 'Error: Failed to pull ControllerBuddy-DCS-Integration repository' false
             fi
         elif [ "$uninstall" != true ]
         then
@@ -633,55 +636,61 @@ else
         add_line_if_missing '/etc/modules-load.d/uinput.conf' 'uinput'
     fi
 
+    check_cb_installed_version
+    [ -n "$cb_installed_version" ] && cb_not_installed=false || cb_not_installed=true
+
     log 'Checking for the latest ControllerBuddy release...'
     cb_json=$(curl https://api.github.com/repos/bwRavencl/ControllerBuddy/releases/latest)
-    check_retval 'Error: Failed to obtain ControllerBuddy release information from GitHub'
+    check_retval 'Error: Failed to obtain ControllerBuddy release information from GitHub' "$cb_not_installed"
 
-    cb_latest_version=$(grep tag_name <<< "$cb_json" | cut -d : -f 2 | tr -d \",' ')
-    if [ -z "$cb_latest_version" ]
+    if [ -z "$cb_json" ]
     then
-        log 'Error: Failed to determine latest ControllerBuddy version'
-        confirm_exit 1
-    fi
-
-    check_cb_installed_version
-
-    if [ "$cb_installed_version" = "$cb_latest_version" ]
-    then
-        log "ControllerBuddy $cb_installed_version is up-to-date!"
-        echo
+        log 'Skipping ControllerBuddy update due to missing release information'
     else
-        log "Determining download URL..."
-        archive_url=$(grep browser_download_url <<< "$cb_json" | grep "$os-${arch//_/-}" | grep -v .sig | cut -d : -f 2,3 | tr -d \",' ')
-        check_retval "Error: Failed to determine download URL for $cb_latest_version"
-
-        log "Downloading ControllerBuddy $cb_latest_version..."
-        tmp_archive_file=$(mktemp -p "$tmp_dir" -q) &&
-        curl -o "$tmp_archive_file" -L "$archive_url"
-        check_retval "Error: Failed to obtain ControllerBuddy $cb_latest_version from GitHub"
-
-        verify_signature "$tmp_archive_file" "$archive_url.sig"
-
-        if [ -d "$cb_dir" ]
+        cb_latest_version=$(grep tag_name <<< "$cb_json" | cut -d : -f 2 | tr -d \",' ')
+        if [ -z "$cb_latest_version" ]
         then
-            remove_controller_buddy
+            log 'Error: Failed to determine latest ControllerBuddy version'
+            confirm_exit 1
         fi
 
-        log 'Decompressing archive...'
-        if [ "$OSTYPE" = msys ]
+        if [ "$cb_installed_version" = "$cb_latest_version" ]
         then
-            mkdir -p "$cb_parent_dir" && unzip -d "$cb_parent_dir" "$tmp_archive_file"
-        else
-            mkdir -p "$cb_parent_dir" && tar xzf "$tmp_archive_file" -C "$cb_parent_dir"
-        fi
-        # shellcheck disable=SC2181
-        if [ "$?" -eq 0 ]
-        then
-            log 'Done!'
+            log "ControllerBuddy $cb_installed_version is up-to-date!"
             echo
         else
-            log 'Error: Failed to decompress archive'
-            confirm_exit 1
+            log "Determining download URL..."
+            archive_url=$(grep browser_download_url <<< "$cb_json" | grep "$os-${arch//_/-}" | grep -v .sig | cut -d : -f 2,3 | tr -d \",' ')
+            check_retval "Error: Failed to determine download URL for $cb_latest_version"
+
+            log "Downloading ControllerBuddy $cb_latest_version..."
+            tmp_archive_file=$(mktemp -p "$tmp_dir" -q) &&
+            curl -o "$tmp_archive_file" -L "$archive_url"
+            check_retval "Error: Failed to obtain ControllerBuddy $cb_latest_version from GitHub"
+
+            verify_signature "$tmp_archive_file" "$archive_url.sig"
+
+            if [ -d "$cb_dir" ]
+            then
+                remove_controller_buddy
+            fi
+
+            log 'Decompressing archive...'
+            if [ "$OSTYPE" = msys ]
+            then
+                mkdir -p "$cb_parent_dir" && unzip -d "$cb_parent_dir" "$tmp_archive_file"
+            else
+                mkdir -p "$cb_parent_dir" && tar xzf "$tmp_archive_file" -C "$cb_parent_dir"
+            fi
+            # shellcheck disable=SC2181
+            if [ "$?" -eq 0 ]
+            then
+                log 'Done!'
+                echo
+            else
+                log 'Error: Failed to decompress archive'
+                confirm_exit 1
+            fi
         fi
     fi
 
@@ -716,13 +725,15 @@ else
 
     cb_profiles_branch=$(cut -d '.' -f -2 <<< "$cb_installed_version")
 
-    if [ -d "$cb_profiles_dir" ]
+    [[ -d "$cb_profiles_dir" ]] && cb_profiles_dir_exists=true || cb_profiles_dir_exists=false
+
+    if [ "$cb_profiles_dir_exists" = true ]
     then
         log 'Pulling ControllerBuddy-Profiles repository...'
         git -C "$cb_profiles_dir" fetch origin &&
         git -C "$cb_profiles_dir" checkout "$cb_profiles_branch" &&
         git -C "$cb_profiles_dir" pull origin "$cb_profiles_branch" --rebase
-        check_retval 'Error: Failed to pull ControllerBuddy-Profiles repository'
+        check_retval 'Error: Failed to pull ControllerBuddy-Profiles repository' false
     else
         log 'Cloning ControllerBuddy-Profiles repository...'
         git clone https://github.com/bwRavencl/ControllerBuddy-Profiles.git "$cb_profiles_dir" --branch "$cb_profiles_branch"
