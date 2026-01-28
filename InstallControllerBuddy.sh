@@ -580,7 +580,7 @@ else
                 log 'Yes'
             else
                 log 'No - starting elevated vJoyConfig process...'
-                powershell -Command "Start-Process '$vjoy_config_exe_path' '1 -f -a x y z rx ry rz sl0 sl1 -b 128 -p 0 -s 0 -e' -Verb Runas -Wait"
+                powershell -NoProfile -Command "Start-Process '$vjoy_config_exe_path' '1 -f -a x y z rx ry rz sl0 sl1 -b 128 -p 0 -s 0 -e' -Verb Runas -Wait"
                 check_retval 'Error: Failed to start elevated vJoyConfig process'
                 check_vjoy_configured
                 if [ "$vjoy_configured" != true ]
@@ -809,7 +809,7 @@ else
                 done
             fi
             echo
-            powershell -ExecutionPolicy Bypass -File \"\$1\"\
+            powershell -NoProfile -ExecutionPolicy Bypass -File \"\$1\"\
             " shell {} \;)
             if [ -n "$config_scripts_output" ]
             then
