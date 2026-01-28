@@ -9,7 +9,7 @@ The script performs the following tasks:
 - Checks for the latest version of `InstallControllerBuddy.sh` and updates itself when necessary
 - Ensures you have the correct version of [vJoy](https://github.com/BrunnerInnovation/vJoy) installed (*only on Windows*)
 - Configures a vJoy device for ControllerBuddy (*only on Windows*)
-- Ensures you have [GnuPG](https://gnupg.org/), [cUrl](https://curl.se/), [libSDL2](https://www.libsdl.org/) and [Git](https://git-scm.com/) installed (*only on Linux*)
+- Ensures you have [GnuPG](https://gnupg.org/), [cUrl](https://curl.se/) and [Git](https://git-scm.com/) installed (*only on Linux*)
 - Configures [udev](https://www.freedesktop.org/software/systemd/man/udev.html) and [uinput](https://www.kernel.org/doc/html/latest/input/uinput.html) for ControllerBuddy
   (*only on Linux*)
 - Downloads and installs the latest release of ControllerBuddy
