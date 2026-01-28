@@ -68,7 +68,6 @@ case "$OSTYPE" in
         cb_bin_dir="$cb_dir"
         cb_exe=ControllerBuddy.exe
         cb_exe_path="$cb_bin_dir\\$cb_exe"
-        cb_app_dir="$cb_dir\\app"
         cb_profiles_dir="$USERPROFILE\\Documents\\ControllerBuddy-Profiles"
         cb_shortcuts_dir="$APPDATA\\Microsoft\\Windows\\Start Menu\\Programs\\ControllerBuddy"
         saved_games_dir="$USERPROFILE\\Saved Games"
@@ -82,7 +81,6 @@ case "$OSTYPE" in
         cb_dir="$cb_parent_dir/ControllerBuddy"
         cb_bin_dir="$cb_dir/bin"
         cb_lib_dir="$cb_dir/lib"
-        cb_app_dir="$cb_lib_dir/app"
         cb_exe=ControllerBuddy
         cb_exe_path="$cb_bin_dir/$cb_exe"
         if which xdg-user-dir >/dev/null 2>/dev/null
@@ -354,9 +352,15 @@ function check_vjoy_configured() {
 }
 
 function check_cb_installed_version {
-    if [ -d "$cb_dir" ]
+    local jpackage_xml_file="$cb_dir/app/.jpackage.xml"
+    if [ -d "$cb_dir" ] && [ -f "$xml_file" ]
     then
-        cb_installed_version=$(find "$cb_app_dir" -iname 'controllerbuddy-*.jar' -mindepth 2 -maxdepth 2 -print0 2>/dev/null | xargs -0 -I filename basename -s .jar filename | cut -d - -f 2,3)
+        if [[ "$OSTYPE" = msys ]]
+        then
+            cb_installed_version=$(powershell -NoProfile -Command "(Select-Xml -Path '$(cygpath -w "$jpackage_xml_file")' -XPath '//app-version').Node.InnerText")
+        else
+            cb_installed_version=$(xmllint --xpath 'string(//app-version)' "$jpackage_xml_file" 2>/dev/null)
+        fi
         auto_exit=true
     fi
 }
@@ -602,6 +606,17 @@ else
             log 'No - installing Git...'
             install_package 'git' 'git' 'git' 'git'
             check_retval 'Error: Failed to install Git. Please restart this script after manually installing Git.'
+        fi
+        echo
+
+        log 'Checking if xmllint is installed...'
+        if which xmllint >/dev/null 2>/dev/null
+        then
+            log 'Yes'
+        else
+            log 'No - installing xmllint...'
+            install_package 'libxml2-utils' 'libxml2' 'libxml2' 'libxml2-tools'
+            check_retval 'Error: Failed to install xmllint. Please restart this script after manually installing xmllint.'
         fi
         echo
 
