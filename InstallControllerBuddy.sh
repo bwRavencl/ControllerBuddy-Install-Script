@@ -530,14 +530,20 @@ then
                     install_dcs_integration "$dcs_open_beta_user_dir" uninstall
                 elif [ "$OSTYPE" = linux-gnu ]
                 then
-                    log 'Removing udev rules file...'
-                    check_sudo_privileges
-                    sudo rm -rf "$udev_rules_file"
-                    check_retval "Error: Failed to remove udev rules file '$udev_rules_file'"
-                    log 'Removing module configuration file...'
-                    check_sudo_privileges
-                    sudo rm -rf "$module_conf_file"
-                    check_retval "Error: Failed to remove module configuration file '$module_conf_file'"
+                    if [ -f "$udev_rules_file" ]
+                    then
+                        log 'Removing udev rules file...'
+                        check_sudo_privileges
+                        sudo rm -rf "$udev_rules_file"
+                        check_retval "Error: Failed to remove udev rules file '$udev_rules_file'"
+                    fi
+                    if [ -f "$module_conf_file" ]
+                    then
+                        log 'Removing module configuration file...'
+                        check_sudo_privileges
+                        sudo rm -rf "$module_conf_file"
+                        check_retval "Error: Failed to remove module configuration file '$module_conf_file'"
+                    fi
                 fi
 
                 rm -rf "$cb_dir" 2>/dev/null
