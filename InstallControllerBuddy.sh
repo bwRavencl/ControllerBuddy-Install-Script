@@ -68,7 +68,7 @@ case "$OSTYPE" in
         cb_bin_dir="$cb_dir"
         cb_exe=ControllerBuddy.exe
         cb_exe_path="$cb_bin_dir\\$cb_exe"
-        cb_app_dir="$cb_dir\\app"
+        modules_path="$cb_dir\\runtime\\lib\\modules"
         cb_profiles_dir="$USERPROFILE\\Documents\\ControllerBuddy-Profiles"
         cb_shortcuts_dir="$APPDATA\\Microsoft\\Windows\\Start Menu\\Programs\\ControllerBuddy"
         saved_games_dir="$USERPROFILE\\Saved Games"
@@ -82,9 +82,9 @@ case "$OSTYPE" in
         cb_dir="$cb_parent_dir/ControllerBuddy"
         cb_bin_dir="$cb_dir/bin"
         cb_lib_dir="$cb_dir/lib"
-        cb_app_dir="$cb_lib_dir/app"
         cb_exe=ControllerBuddy
         cb_exe_path="$cb_bin_dir/$cb_exe"
+        modules_path="$cb_dir/lib/runtime/lib/modules"
         if which xdg-user-dir >/dev/null 2>/dev/null
         then
             cb_profiles_dir="$(xdg-user-dir DOCUMENTS)/ControllerBuddy-Profiles"
@@ -354,9 +354,9 @@ function check_vjoy_configured() {
 }
 
 function check_cb_installed_version {
-    if [ -d "$cb_dir" ]
+    if [ -f "$modules_path" ]
     then
-        cb_installed_version=$(find "$cb_app_dir" -iname 'controllerbuddy-*.jar' -mindepth 2 -maxdepth 2 -print0 2>/dev/null | xargs -0 -I filename basename -s .jar filename | cut -d - -f 2,3)
+        cb_installed_version=$(grep -aoP -m 1 '(?<=ControllerBuddy )\d+\.\d+\.\d+-[a-z0-9]+' "$modules_path")
         auto_exit=true
     fi
 }
