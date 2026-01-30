@@ -101,7 +101,7 @@ case "$OSTYPE" in
         ;;
 esac
 
-rm -rf "$log_file"
+rm -f "$log_file"
 
 function check_retval() {
     if [ "$?" -eq 0 ]
@@ -534,14 +534,14 @@ then
                     then
                         log 'Removing udev rules file...'
                         check_sudo_privileges
-                        sudo rm -rf "$udev_rules_file"
+                        sudo rm -f "$udev_rules_file"
                         check_retval "Error: Failed to remove udev rules file '$udev_rules_file'"
                     fi
                     if [ -f "$module_conf_file" ]
                     then
                         log 'Removing module configuration file...'
                         check_sudo_privileges
-                        sudo rm -rf "$module_conf_file"
+                        sudo rm -f "$module_conf_file"
                         check_retval "Error: Failed to remove module configuration file '$module_conf_file'"
                     fi
                 fi
