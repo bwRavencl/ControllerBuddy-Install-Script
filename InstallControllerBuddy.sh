@@ -92,7 +92,8 @@ case "$OSTYPE" in
             cb_profiles_dir="$HOME/ControllerBuddy-Profiles"
         fi
         cb_shortcuts_dir="$HOME/.local/share/applications/ControllerBuddy"
-        udev_rules_file=/etc/udev/rules.d/99-controllerbuddy.rules
+        udev_rules_file=/etc/udev/rules.d/60-controllerbuddy.rules
+        module_conf_file=/etc/modules-load.d/controllerbuddy.conf
         ;;
      *)
         log 'Error: This script must either be run in a Git Bash for Windows or a GNU/Linux Bash environment'
@@ -382,12 +383,11 @@ function remove_controller_buddy() {
     fi
 }
 
-function add_line_if_missing() {
-    if [ ! -f "$1" ] || ! grep -qxF "$2" "$1"
-    then
-        log "Adding missing line '$2' to file '$1'..."
+function ensure_file_content() {
+    if [ ! -f "$1" ] || [ "$(cat "$1" 2>/dev/null)" != "$2" ]; then
+        log "Initializing '$1'..."
         check_sudo_privileges
-        echo "$2" | sudo tee -a "$1" >/dev/null 2>/dev/null
+        echo "$2" | sudo tee "$1" >/dev/null
         check_retval "Error: Failed to write $1"
         reboot_required=true
     fi
@@ -530,10 +530,14 @@ then
                     install_dcs_integration "$dcs_open_beta_user_dir" uninstall
                 elif [ "$OSTYPE" = linux-gnu ]
                 then
-                    log 'Removing udev rules...'
+                    log 'Removing udev rules file...'
                     check_sudo_privileges
                     sudo rm -rf "$udev_rules_file"
                     check_retval "Error: Failed to remove udev rules file '$udev_rules_file'"
+                    log 'Removing module configuration file...'
+                    check_sudo_privileges
+                    sudo rm -rf "$module_conf_file"
+                    check_retval "Error: Failed to remove module configuration file '$module_conf_file'"
                 fi
 
                 rm -rf "$cb_dir" 2>/dev/null
@@ -605,35 +609,8 @@ else
         fi
         echo
 
-        cb_group=controllerbuddy
-        log "Checking if the '$cb_group' group exists..."
-        if getent group "$cb_group" >/dev/null
-        then
-            log 'Yes'
-        else
-            log "No - creating the '$cb_group' group"
-            check_sudo_privileges
-            sudo /usr/sbin/groupadd -f "$cb_group"
-            check_retval "Error: Failed to create the '$cb_group' group"
-            reboot_required=true
-        fi
-        echo
-
-        log "Checking if user '$USER' is in the '$cb_group' group..."
-        if id -nGz "$USER" | grep -qzxF "$cb_group"
-        then
-            log  'Yes'
-        else
-            log "No - adding user '$USER' to the '$cb_group' group"
-            check_sudo_privileges
-            sudo gpasswd -a "$USER" "$cb_group"
-            check_retval "Error: Failed to add user '$USER' to the '$cb_group' group"
-            reboot_required=true
-        fi
-        echo
-
-        add_line_if_missing "$udev_rules_file" 'KERNEL=="uinput", SUBSYSTEM=="misc", MODE="0660", GROUP="controllerbuddy"'
-        add_line_if_missing '/etc/modules-load.d/uinput.conf' 'uinput'
+        ensure_file_content "$udev_rules_file" 'KERNEL=="uinput", SUBSYSTEM=="misc", TAG+="uaccess", OPTIONS+="static_node=uinput"'
+        ensure_file_content "$module_conf_file" uinput
     fi
 
     check_cb_installed_version
