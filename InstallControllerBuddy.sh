@@ -110,7 +110,8 @@ function check_retval() {
         echo
     else
         log "$1"
-        if [ "${2:-true}" = "true" ]; then
+        if [ "${2:-true}" = "true" ]
+        then
             confirm_exit 1
         fi
     fi
@@ -384,7 +385,8 @@ function remove_controller_buddy() {
 }
 
 function ensure_file_content() {
-    if [ ! -f "$1" ] || [ "$(cat "$1" 2>/dev/null)" != "$2" ]; then
+    if [ ! -f "$1" ] || [ "$(cat "$1" 2>/dev/null)" != "$2" ]
+    then
         log "Initializing '$1'..."
         check_sudo_privileges
         echo "$2" | sudo tee "$1" >/dev/null
