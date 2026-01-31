@@ -85,7 +85,7 @@ case "$OSTYPE" in
         cb_exe=ControllerBuddy
         cb_exe_path="$cb_bin_dir/$cb_exe"
         modules_path="$cb_dir/lib/runtime/lib/modules"
-        if which xdg-user-dir >/dev/null 2>&1
+        if command -v xdg-user-dir >/dev/null 2>&1
         then
             cb_profiles_dir="$(xdg-user-dir DOCUMENTS)/ControllerBuddy-Profiles"
         else
@@ -132,7 +132,7 @@ trap 'rm -rf $tmp_dir' EXIT
 function check_sudo_privileges() {
     if [ "$has_sudo_privileges" != true ]
     then
-        if ! which sudo >/dev/null 2>&1
+        if ! command -v sudo >/dev/null 2>&1
         then
             log 'Error: sudo is not installed. Please restart this script after manually installing sudo.'
             confirm_exit 1
@@ -149,19 +149,19 @@ function check_sudo_privileges() {
 }
 
 function install_package() {
-    if which apt-get >/dev/null 2>&1
+    if command -v apt-get >/dev/null 2>&1
     then
         check_sudo_privileges
         sudo -- sh -c "apt-get update && apt-get install -y $1"
-    elif which yum >/dev/null 2>&1
+    elif command -v yum >/dev/null 2>&1
     then
         check_sudo_privileges
         sudo yum -y install "$2"
-    elif which pacman >/dev/null 2>&1
+    elif command -v pacman >/dev/null 2>&1
     then
         check_sudo_privileges
         sudo pacman -S --noconfirm "$3"
-    elif which zypper >/dev/null 2>&1
+    elif command -v zypper >/dev/null 2>&1
     then
         check_sudo_privileges
         sudo zypper --non-interactive install "$4"
@@ -174,7 +174,7 @@ function verify_signature() {
     if [ "$OSTYPE" != msys ]
     then
         log 'Checking if GnuPG is installed...'
-        if which gpg >/dev/null 2>&1
+        if command -v gpg >/dev/null 2>&1
         then
             log 'Yes'
         else
@@ -271,7 +271,7 @@ then
     if [ "$OSTYPE" != msys ]
     then
         log 'Checking if cURL is installed...'
-        if which curl >/dev/null 2>&1
+        if command -v curl >/dev/null 2>&1
         then
             log 'Yes'
         else
@@ -605,7 +605,7 @@ else
         fi
     else
         log 'Checking if Git is installed...'
-        if which git >/dev/null 2>&1
+        if command -v git >/dev/null 2>&1
         then
             log 'Yes'
         else
