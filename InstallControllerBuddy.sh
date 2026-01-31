@@ -85,7 +85,7 @@ case "$OSTYPE" in
         cb_exe=ControllerBuddy
         cb_exe_path="$cb_bin_dir/$cb_exe"
         modules_path="$cb_dir/lib/runtime/lib/modules"
-        if which xdg-user-dir >/dev/null 2>/dev/null
+        if which xdg-user-dir >/dev/null 2>&1
         then
             cb_profiles_dir="$(xdg-user-dir DOCUMENTS)/ControllerBuddy-Profiles"
         else
@@ -132,7 +132,7 @@ trap 'rm -rf $tmp_dir' EXIT
 function check_sudo_privileges() {
     if [ "$has_sudo_privileges" != true ]
     then
-        if ! which sudo >/dev/null 2>/dev/null
+        if ! which sudo >/dev/null 2>&1
         then
             log 'Error: sudo is not installed. Please restart this script after manually installing sudo.'
             confirm_exit 1
@@ -149,19 +149,19 @@ function check_sudo_privileges() {
 }
 
 function install_package() {
-    if which apt-get >/dev/null 2>/dev/null
+    if which apt-get >/dev/null 2>&1
     then
         check_sudo_privileges
         sudo -- sh -c "apt-get update && apt-get install -y $1"
-    elif which yum >/dev/null 2>/dev/null
+    elif which yum >/dev/null 2>&1
     then
         check_sudo_privileges
         sudo yum -y install "$2"
-    elif which pacman >/dev/null 2>/dev/null
+    elif which pacman >/dev/null 2>&1
     then
         check_sudo_privileges
         sudo pacman -S --noconfirm "$3"
-    elif which zypper >/dev/null 2>/dev/null
+    elif which zypper >/dev/null 2>&1
     then
         check_sudo_privileges
         sudo zypper --non-interactive install "$4"
@@ -174,7 +174,7 @@ function verify_signature() {
     if [ "$OSTYPE" != msys ]
     then
         log 'Checking if GnuPG is installed...'
-        if which gpg >/dev/null 2>/dev/null
+        if which gpg >/dev/null 2>&1
         then
             log 'Yes'
         else
@@ -247,7 +247,7 @@ EOF
     local tmp_keyring_file &&
     tmp_keyring_file=$(mktemp -p "$tmp_dir" -q) &&
     echo "$keyring_asc_content" | gpg --dearmor > "$tmp_keyring_file" 2>/dev/null &&
-    gpgv --keyring "$tmp_keyring_file" "$tmp_signature_file" "$1" >/dev/null 2>/dev/null
+    gpgv --keyring "$tmp_keyring_file" "$tmp_signature_file" "$1" >/dev/null 2>&1
     check_retval 'Error: Bad signature'
 }
 
@@ -271,7 +271,7 @@ then
     if [ "$OSTYPE" != msys ]
     then
         log 'Checking if cURL is installed...'
-        if which curl >/dev/null 2>/dev/null
+        if which curl >/dev/null 2>&1
         then
             log 'Yes'
         else
@@ -366,7 +366,7 @@ function remove_controller_buddy() {
     if [ -d "$cb_dir" ]
     then
         log 'Stopping any old ControllerBuddy process...'
-        if { [ "$OSTYPE" = msys ] && taskkill -F -IM $cb_exe >/dev/null 2>/dev/null ; } ||
+        if { [ "$OSTYPE" = msys ] && taskkill -F -IM $cb_exe >/dev/null 2>&1 ; } ||
             { [ "$OSTYPE" = linux-gnu ] && killall ControllerBuddy 2>/dev/null ; }
         then
             sleep 2
@@ -472,7 +472,7 @@ function install_dcs_integration() {
             check_retval "Error: Failed to add ControllerBuddy-DCS-Integration to $export_lua_path"
         fi
 
-        if REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_EXECUTABLE >/dev/null 2>/dev/null
+        if REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_EXECUTABLE >/dev/null 2>&1
         then
             if [ "$uninstall" = true ]
             then
@@ -485,7 +485,7 @@ function install_dcs_integration() {
             add_environment_variable CONTROLLER_BUDDY_EXECUTABLE "$cb_exe_path"
         fi
 
-        if REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_PROFILES_DIR >/dev/null 2>/dev/null
+        if REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_PROFILES_DIR >/dev/null 2>&1
         then
             if [ "$uninstall" = true ]
             then
@@ -519,7 +519,7 @@ then
 
                 if [ "$OSTYPE" = msys ]
                 then
-                    if REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS >/dev/null 2>/dev/null
+                    if REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS >/dev/null 2>&1
                     then
                         log 'Removing CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS environment variable...'
                         REG DELETE 'HKCU\Environment' //F //V CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS
@@ -605,7 +605,7 @@ else
         fi
     else
         log 'Checking if Git is installed...'
-        if which git >/dev/null 2>/dev/null
+        if which git >/dev/null 2>&1
         then
             log 'Yes'
         else
@@ -813,7 +813,7 @@ else
         then
             start //B "" "$cb_exe_path" '-autostart' 'local' '-tray' &
         else
-            nohup "$cb_exe_path" -autostart local -tray >/dev/null 2>/dev/null &
+            nohup "$cb_exe_path" -autostart local -tray >/dev/null 2>&1 &
         fi
     fi
 fi
