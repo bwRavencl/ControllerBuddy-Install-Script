@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 set +o history
 
+banner=$(
 cat << EOF
 ╔═════════════════════════════════════════════════════════════╗
 ║ █▀▀ █▀█ █▀█ ▀█▀ █▀▄ █▀█ █   █   █▀▀ █▀▄ █▀▄ █ █ █▀▄ █▀▄ █ █ ║
@@ -29,8 +30,46 @@ cat << EOF
 ║             ▀▀▀ ▀ ▀ ▀▀▀  ▀  ▀ ▀ ▀▀▀ ▀▀▀ ▀▀▀ ▀ ▀             ║
 ║                    © 2022 Matteo Hausner                    ║
 ╚═════════════════════════════════════════════════════════════╝
-
 EOF
+)
+
+if command -v tput >/dev/null 2>&1 && [ "$(tput colors 2>/dev/null || echo 0)" -ge 256 ]
+then
+    start_color=72
+    end_color=75
+    diff=$(( end_color - start_color ))
+    total_lines=0
+    while IFS= read -r _
+    do
+        total_lines=$(( total_lines + 1 ))
+    done <<<"$banner"
+    interior_lines=$(( total_lines - 3 ))
+    current_line=0
+    while IFS= read -r line
+    do
+        current_line=$(( current_line + 1 ))
+        if [ "$current_line" -eq 1 ] || [ "$current_line" -eq "$(( total_lines - 1 ))" ] || [ "$current_line" -eq "$total_lines" ]
+        then
+            printf '%s\n' "$line"
+            continue
+        fi
+        pos=$(( current_line - 2 ))
+        if [ "$interior_lines" -gt 1 ]
+        then
+            step=$(( diff * pos / (interior_lines - 1) ))
+        else
+            step=0
+        fi
+        color_code=$(( start_color + step ))
+        first_char=${line:0:1}
+        last_char=${line: -1}
+        middle_part=${line:1:${#line}-2}
+        printf '%s\e[38;5;%dm%s\e[0m%s\n' "$first_char" "$color_code" "$middle_part" "$last_char"
+    done <<<"$banner"
+    printf '\n'
+else
+    printf '%s\n\n' "$banner"
+fi
 
 function log() {
     echo "$1"
