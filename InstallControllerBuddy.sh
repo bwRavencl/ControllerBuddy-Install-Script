@@ -152,6 +152,27 @@ function check_retval() {
         if [ "${2:-true}" = "true" ]
         then
             confirm_exit 1
+        else
+            echo
+            while true;
+            do
+                read -rp 'Would you like to continue anyway? [y/N] ' response
+                case $response in
+                    [Yy]*)
+                        log 'Continuing...'
+                        echo
+                        break
+                        ;;
+                    [Nn]* | '')
+                        log 'Aborted!'
+                        exit 0
+                        ;;
+                    *)
+                        log "Invalid input. Please answer with 'yes' or 'no'."
+                        echo
+                        ;;
+                esac
+            done
         fi
     fi
 }
