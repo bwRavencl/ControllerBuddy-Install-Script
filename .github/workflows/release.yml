@@ -50,7 +50,7 @@ jobs:
           echo "signature_file=$signature_file" >> "$GITHUB_OUTPUT"
       - name: Release
         id: release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: ControllerBuddy-Install-Script-${{ steps.generate_tag_name.outputs.tag_name }}
           tag_name: ${{ steps.generate_tag_name.outputs.tag_name }}
