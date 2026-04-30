@@ -98,7 +98,7 @@ fi
 script_name=$(basename "${BASH_SOURCE[0]}")
 
 case "$OSTYPE" in
-    msys)
+    cygwin | msys)
         os=windows
         log_file="$TMP\\InstallControllerBuddy.log"
         vjoy_desired_version='2.2.2.0'
@@ -232,7 +232,7 @@ function install_package() {
 }
 
 function verify_signature() {
-    if [ "$OSTYPE" != msys ]
+    if [ "$os" != windows ]
     then
         log 'Checking if GnuPG is installed...'
         if command -v gpg >/dev/null 2>&1
@@ -329,7 +329,7 @@ esac
 
 if [ "$skip_self_update" != true ] && [ "$uninstall" != true ]
 then
-    if [ "$OSTYPE" != msys ]
+    if [ "$os" != windows ]
     then
         log 'Checking if cURL is installed...'
         if command -v curl >/dev/null 2>&1
@@ -427,8 +427,8 @@ function remove_controller_buddy() {
     if [ -d "$cb_dir" ]
     then
         log 'Stopping any old ControllerBuddy process...'
-        if { [ "$OSTYPE" = msys ] && taskkill -F -IM $cb_exe >/dev/null 2>&1 ; } ||
-            { [ "$OSTYPE" = linux-gnu ] && killall ControllerBuddy 2>/dev/null ; }
+        if { [ "$os" = windows ] && taskkill -F -IM $cb_exe >/dev/null 2>&1 ; } ||
+            { [ "$os" = linux ] && killall ControllerBuddy 2>/dev/null ; }
         then
             sleep 2
             if [ "$uninstall" != true ]
@@ -456,7 +456,7 @@ function ensure_file_content() {
 }
 
 function create_shortcut() {
-    if [ "$OSTYPE" = msys ]
+    if [ "$os" = windows ]
     then
         local shortcut_path="$cb_shortcuts_dir\\$1.lnk"
     else
@@ -466,7 +466,7 @@ function create_shortcut() {
     if [ ! -f "$shortcut_path" ]
     then
         log "Creating '$1' shortcut..."
-        if [ "$OSTYPE" = msys ]
+        if [ "$os" = windows ]
         then
             mkdir -p "$cb_shortcuts_dir" && create-shortcut --arguments "$3" --work-dir "$4" "$2" "$shortcut_path"
         else
@@ -579,7 +579,7 @@ then
                     check_retval 'Error: Failed to remove ControllerBuddy shortcuts'
                 fi
 
-                if [ "$OSTYPE" = msys ]
+                if [ "$os" = windows ]
                 then
                     if REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS >/dev/null 2>&1
                     then
@@ -590,7 +590,7 @@ then
 
                     install_dcs_integration "$dcs_stable_user_dir" uninstall
                     install_dcs_integration "$dcs_open_beta_user_dir" uninstall
-                elif [ "$OSTYPE" = linux-gnu ]
+                elif [ "$os" = linux ]
                 then
                     if [ -f "$udev_rules_file" ]
                     then
@@ -624,7 +624,7 @@ then
         esac
     done
 else
-    if [ "$OSTYPE" = msys ]
+    if [ "$os" = windows ]
     then
         check_vjoy_installed
         if [ "$vjoy_installed" != true ]
@@ -721,7 +721,7 @@ else
             fi
 
             log 'Decompressing archive...'
-            if [ "$OSTYPE" = msys ]
+            if [ "$os" = windows ]
             then
                 mkdir -p "$cb_parent_dir" && unzip -d "$cb_parent_dir" "$tmp_archive_file"
             else
@@ -750,7 +750,7 @@ else
         check_retval "Error: Failed to copy $script_name to $script_path"
     fi
 
-    if [ "$OSTYPE" = msys ]
+    if [ "$os" = windows ]
     then
         script_command="$script_path"
         script_work_dir=%TMP%
@@ -785,7 +785,7 @@ else
         check_retval 'Error: Failed to clone ControllerBuddy-Profiles repository'
     fi
 
-    if [ "$OSTYPE" = msys ]
+    if [ "$os" = windows ]
     then
         if reg_query_output=$(REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS 2>/dev/null)
         then
@@ -871,7 +871,7 @@ else
     if [ "$restart" = true ]
     then
         log 'Launching ControllerBuddy...'
-        if [ "$OSTYPE" = msys ]
+        if [ "$os" = windows ]
         then
             start //B "" "$cb_exe_path" '-autostart' 'local' '-tray' &
         else
