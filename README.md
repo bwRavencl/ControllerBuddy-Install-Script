@@ -1,5 +1,10 @@
 # ControllerBuddy-Install-Script
 
+## 🎬 Showcase
+
+[![Showcase Video](showcase.webp)](https://www.youtube.com/watch?v=AYBr_zzQCqA)  
+*<small>Click to open on YouTube</small>*
+
 ## 📖 Description
 
 This script streamlines installing and updating [ControllerBuddy](https://controllerbuddy.org) and the official [ControllerBuddy-Profiles](https://github.com/bwRavencl/ControllerBuddy-Profiles) on Windows x86-64 and Linux (x86-64 and aarch64) systems.
