@@ -774,11 +774,41 @@ else
 
     if [ "$cb_profiles_dir_exists" = true ]
     then
-        log 'Pulling ControllerBuddy-Profiles repository...'
-        git -C "$cb_profiles_dir" fetch origin &&
-        git -C "$cb_profiles_dir" checkout "$cb_profiles_branch" &&
-        git -C "$cb_profiles_dir" pull origin "$cb_profiles_branch" --rebase
-        check_retval 'Error: Failed to pull ControllerBuddy-Profiles repository' false
+        pull_profiles=true
+        if ! git -C "$cb_profiles_dir" diff --quiet || ! git -C "$cb_profiles_dir" diff --cached --quiet
+        then
+            log 'Warning: ControllerBuddy-Profiles repository has local modifications'
+            while true
+            do
+                read -rp 'Permanently discard all local modifications to allow pull? [y/N] ' response
+                case $response in
+                    [Yy]*)
+                        log 'Checking out ControllerBuddy-Profiles repository...'
+                        git -C "$cb_profiles_dir" checkout -- .
+                        check_retval 'Error: Failed to checkout ControllerBuddy-Profiles repository' false
+                        break
+                        ;;
+                    [Nn]* | '')
+                        pull_profiles=false
+                        log 'Skipping pull of ControllerBuddy-Profiles repository'
+                        echo
+                        break
+                        ;;
+                    *)
+                        log "Invalid input. Please answer with 'yes' or 'no'."
+                        echo
+                        ;;
+                esac
+            done
+        fi
+        if [ "$pull_profiles" = true ]
+        then
+            log 'Pulling ControllerBuddy-Profiles repository...'
+            git -C "$cb_profiles_dir" fetch origin &&
+            git -C "$cb_profiles_dir" checkout "$cb_profiles_branch" &&
+            git -C "$cb_profiles_dir" pull origin "$cb_profiles_branch" --rebase
+            check_retval 'Error: Failed to pull ControllerBuddy-Profiles repository' false
+        fi
     else
         log 'Cloning ControllerBuddy-Profiles repository...'
         git clone https://github.com/bwRavencl/ControllerBuddy-Profiles.git "$cb_profiles_dir" --branch "$cb_profiles_branch"
