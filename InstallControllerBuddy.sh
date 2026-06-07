@@ -891,8 +891,8 @@ else
                 log "$config_scripts_output"
             fi
             log 'Done!'
-            echo
         fi
+        echo
 
         install_dcs_integration "$dcs_stable_user_dir"
         install_dcs_integration "$dcs_open_beta_user_dir"
