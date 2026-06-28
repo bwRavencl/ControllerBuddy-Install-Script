@@ -249,7 +249,7 @@ function verify_signature() {
     log 'Verifying signature...'
     local tmp_signature_file &&
     tmp_signature_file=$(mktemp -p "$tmp_dir" -q) &&
-    curl -o "$tmp_signature_file" -L "$2" &&
+    curl -o "$tmp_signature_file" -fL "$2" &&
     local keyring_asc_content &&
     keyring_asc_content=$(cat << 'EOF'
 -----BEGIN PGP PUBLIC KEY BLOCK-----
@@ -344,11 +344,11 @@ then
     fi
 
     log 'Checking for the latest install script...'
-    if install_script_json=$(curl https://api.github.com/repos/bwRavencl/ControllerBuddy-Install-Script/releases/latest) &&
+    if install_script_json=$(curl -fL https://api.github.com/repos/bwRavencl/ControllerBuddy-Install-Script/releases/latest) &&
         tag_name=$(grep tag_name <<< "$install_script_json" | cut -d : -f 2 | tr -d \",' ') &&
         install_script_url=https://github.com/bwRavencl/ControllerBuddy-Install-Script/releases/download/$tag_name/InstallControllerBuddy.sh &&
         tmp_install_script_file=$(mktemp -p "$tmp_dir" -q) &&
-        curl -o "$tmp_install_script_file" -L "$install_script_url"
+        curl -o "$tmp_install_script_file" -fL "$install_script_url"
     then
         if cmp -s "${BASH_SOURCE[0]}" "$tmp_install_script_file"
         then
@@ -631,7 +631,7 @@ else
         then
             log "No valid vJoy $vjoy_desired_version installation was found - downloading installer..."
             if tmp_vjoy_setup=$(mktemp -p "$tmp_dir" -q --suffix=.exe) &&
-                curl -o "$tmp_vjoy_setup" -L https://github.com/BrunnerInnovation/vJoy/releases/download/v2.2.2.0/vJoySetup_v2.2.2.0_Win10_Win11.exe &&
+                curl -o "$tmp_vjoy_setup" -fL https://github.com/BrunnerInnovation/vJoy/releases/download/v2.2.2.0/vJoySetup_v2.2.2.0_Win10_Win11.exe &&
                 echo "ef569a3105cd301b89580f18f60c66b339e95296acf2c0dfcaf4b4bbf8ab68fe $tmp_vjoy_setup" | sha256sum --check --status
             then
                 log "Installing vJoy $vjoy_desired_version..."
@@ -685,7 +685,7 @@ else
     [ -n "$cb_installed_version" ] && cb_not_installed=false || cb_not_installed=true
 
     log 'Checking for the latest ControllerBuddy release...'
-    cb_json=$(curl https://api.github.com/repos/bwRavencl/ControllerBuddy/releases/latest)
+    cb_json=$(curl -fL https://api.github.com/repos/bwRavencl/ControllerBuddy/releases/latest)
     check_retval 'Error: Failed to obtain ControllerBuddy release information from GitHub' "$cb_not_installed"
 
     if [ -z "$cb_json" ]
