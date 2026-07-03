@@ -11,9 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - name: Run ShellCheck
-        uses: ludeeus/action-shellcheck@2.0.0
+        uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38 # 2.0.0
 
   release:
     needs: shellcheck
@@ -22,7 +22,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           fetch-depth: 0
       - name: Generate Tag Name
@@ -35,12 +35,12 @@ jobs:
           fi
           echo "tag_name=$tag_name" >> "$GITHUB_OUTPUT"
       - name: Tag Commit
-        uses: tvdias/github-tagger@v0.0.2
+        uses: tvdias/github-tagger@ed7350546e3e503b5e942dffd65bc8751a95e49d # v0.0.2
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.generate_tag_name.outputs.tag_name }}
       - name: Import GPG Key
-        uses: crazy-max/ghaction-import-gpg@v7
+        uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PRIVATE_KEY_PASSPHRASE }}
@@ -52,7 +52,7 @@ jobs:
           echo "signature_file=$signature_file" >> "$GITHUB_OUTPUT"
       - name: Release
         id: release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3
         with:
           name: ControllerBuddy-Install-Script-${{ steps.generate_tag_name.outputs.tag_name }}
           tag_name: ${{ steps.generate_tag_name.outputs.tag_name }}
