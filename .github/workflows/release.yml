@@ -19,12 +19,12 @@ jobs:
     needs: shellcheck
     runs-on: ubuntu-latest
     outputs:
-      script_changed: ${{ steps.compare_scripts.outputs.script_changed }}
+      script_changed: ${{ steps.compare-scripts.outputs.script_changed }}
     steps:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - name: Compare Scripts
-        id: compare_scripts
+        id: compare-scripts
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -47,7 +47,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Generate Tag Name
-        id: generate_tag_name
+        id: generate-tag-name
         run: |
           tag_name=$(git describe --long | sed 's/-/./;s/-g/-/')
           if [ "$(git status --porcelain)" ]
@@ -59,14 +59,14 @@ jobs:
         uses: tvdias/github-tagger@ed7350546e3e503b5e942dffd65bc8751a95e49d # v0.0.2
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ steps.generate_tag_name.outputs.tag_name }}
+          tag: ${{ steps.generate-tag-name.outputs.tag_name }}
       - name: Import GPG Key
         uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PRIVATE_KEY_PASSPHRASE }}
       - name: Sign Script
-        id: sign_script
+        id: sign-script
         run: |
           signature_file="${{ env.INSTALL_SCRIPT_FILE }}.sig"
           gpg --local-user 8590BB74C0F559F8AC911C1D8058553A1FD36B23 --pinentry-mode loopback --passphrase ${{ secrets.GPG_PRIVATE_KEY_PASSPHRASE }} --detach-sig --output "$signature_file" --yes ${{ env.INSTALL_SCRIPT_FILE }}
@@ -75,10 +75,10 @@ jobs:
         id: release
         uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3
         with:
-          name: ControllerBuddy-Install-Script-${{ steps.generate_tag_name.outputs.tag_name }}
-          tag_name: ${{ steps.generate_tag_name.outputs.tag_name }}
+          name: ControllerBuddy-Install-Script-${{ steps.generate-tag-name.outputs.tag_name }}
+          tag_name: ${{ steps.generate-tag-name.outputs.tag_name }}
           draft: false
           prerelease: false
           files: |
             ${{ env.INSTALL_SCRIPT_FILE }}
-            ${{ steps.sign_script.outputs.signature_file }}
+            ${{ steps.sign-script.outputs.signature_file }}
