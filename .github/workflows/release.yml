@@ -72,7 +72,6 @@ jobs:
           gpg --local-user 8590BB74C0F559F8AC911C1D8058553A1FD36B23 --pinentry-mode loopback --passphrase ${{ secrets.GPG_PRIVATE_KEY_PASSPHRASE }} --detach-sig --output "$signature_file" --yes ${{ env.INSTALL_SCRIPT_FILE }}
           echo "signature_file=$signature_file" >> "$GITHUB_OUTPUT"
       - name: Release
-        id: release
         uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3
         with:
           name: ControllerBuddy-Install-Script-${{ steps.generate-tag-name.outputs.tag_name }}
