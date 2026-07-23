@@ -15,8 +15,29 @@ jobs:
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38 # 2.0.0
 
-  release:
+  check-script-changes:
     needs: shellcheck
+    runs-on: ubuntu-latest
+    outputs:
+      script_changed: ${{ steps.compare_scripts.outputs.script_changed }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - name: Compare Scripts
+        id: compare_scripts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          script_changed=true
+          if gh release download --pattern "${{ env.INSTALL_SCRIPT_FILE }}" --output "latest_${{ env.INSTALL_SCRIPT_FILE }}"
+          then
+            cmp -s "${{ env.INSTALL_SCRIPT_FILE }}" "latest_${{ env.INSTALL_SCRIPT_FILE }}" && script_changed=false
+          fi
+          echo "script_changed=$script_changed" >> "$GITHUB_OUTPUT"
+
+  release:
+    needs: check-script-changes
+    if: needs.check-script-changes.outputs.script_changed == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
