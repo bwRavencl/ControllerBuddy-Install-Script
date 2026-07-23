@@ -29,9 +29,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           script_changed=true
-          if gh release download --pattern "${{ env.INSTALL_SCRIPT_FILE }}" --output "latest_${{ env.INSTALL_SCRIPT_FILE }}"
+          if gh release download --pattern "${{ env.INSTALL_SCRIPT_FILE }}" --output "latest_${{ env.INSTALL_SCRIPT_FILE }}" && cmp -s "${{ env.INSTALL_SCRIPT_FILE }}" "latest_${{ env.INSTALL_SCRIPT_FILE }}"
           then
-            cmp -s "${{ env.INSTALL_SCRIPT_FILE }}" "latest_${{ env.INSTALL_SCRIPT_FILE }}" && script_changed=false
+            script_changed=false
+            echo 'Script has not changed since the last release.'
           fi
           echo "script_changed=$script_changed" >> "$GITHUB_OUTPUT"
 
