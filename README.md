@@ -3,7 +3,7 @@
 ## 🎬 Showcase
 
 [![Showcase Video](showcase.webp)](https://www.youtube.com/watch?v=AYBr_zzQCqA)  
-*<small>Click to open on YouTube</small>*
+*<small>Click to open on YouTube</small>* <!-- markdownlint-disable-line no-inline-html -->
 
 ## 📖 Description
 
@@ -19,9 +19,9 @@ The script performs the following tasks:
   (*only on Linux*)
 - Downloads and installs the latest release of ControllerBuddy
 - If missing, creates the following shortcuts in the Start menu:
-    - `ControllerBuddy` (launches ControllerBuddy with arguments: `-autostart local -tray`)
-    - `Update ControllerBuddy` (performs the same steps as if you would run `InstallControllerBuddy.sh`)
-    - `Uninstall ControllerBuddy` (removes ControllerBuddy by launching `InstallControllerBuddy.sh uninstall`)
+  - `ControllerBuddy` (launches ControllerBuddy with arguments: `-autostart local -tray`)
+  - `Update ControllerBuddy` (performs the same steps as if you would run `InstallControllerBuddy.sh`)
+  - `Uninstall ControllerBuddy` (removes ControllerBuddy by launching `InstallControllerBuddy.sh uninstall`)
 - Ensures you have the latest version of the official [ControllerBuddy-Profiles](https://github.com/bwRavencl/ControllerBuddy-Profiles) installed into your user's `Documents` folder
 - Executes the `Configure.ps1` scripts to configure your applications for usage with the official ControllerBuddy-Profiles
   (*only on Windows*)
@@ -31,7 +31,7 @@ The script performs the following tasks:
 
 ## ⬇️ Installing
 
-1. Right click [here](https://raw.githubusercontent.com/bwRavencl/ControllerBuddy-Install-Script/master/InstallControllerBuddy.sh)
+1. Right click [here](https://raw.githubusercontent.com/bwRavencl/ControllerBuddy-Install-Script/master/InstallControllerBuddy.sh) <!-- markdownlint-disable-line descriptive-link-text -->
    and select *Save link as* to download `InstallControllerBuddy.sh`
 2. Depending on your operating system:
 
@@ -39,9 +39,11 @@ The script performs the following tasks:
       (if unsure use the default options during installation)
 
     - **On Linux:** Make `InstallControllerBuddy.sh` executable with:
+
       ```sh
       chmod +x InstallControllerBuddy.sh
       ```
+
 3. Make sure your gamepad is connected
 4. Double-click the downloaded file `InstallControllerBuddy.sh` to start installing / updating
 
