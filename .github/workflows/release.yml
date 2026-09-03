@@ -7,16 +7,20 @@ env:
   INSTALL_SCRIPT_FILE: InstallControllerBuddy.sh
 
 jobs:
-  shellcheck:
+  check:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38 # 2.0.0
+      - name: Lint Markdown Files
+        uses: DavidAnson/markdownlint-cli2-action@21c1be1b93ad9ed58fa840aacc3f279cde2a72ff #v24
+        with:
+          globs: '**/*.md'
 
   check-script-changes:
-    needs: shellcheck
+    needs: check
     runs-on: ubuntu-latest
     outputs:
       script_changed: ${{ steps.compare-scripts.outputs.script_changed }}
