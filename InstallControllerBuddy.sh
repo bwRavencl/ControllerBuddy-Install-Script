@@ -143,7 +143,7 @@ esac
 rm -f "$log_file"
 
 function check_retval() {
-    if [ "$?" -eq 0 ]
+    if [ $? -eq 0 ]
     then
         log 'Done!'
         echo
@@ -728,7 +728,7 @@ else
                 mkdir -p "$cb_parent_dir" && tar xzf "$tmp_archive_file" -C "$cb_parent_dir"
             fi
             # shellcheck disable=SC2181
-            if [ "$?" -eq 0 ]
+            if [ $? -eq 0 ]
             then
                 log 'Done!'
                 echo
