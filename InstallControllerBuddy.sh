@@ -135,7 +135,7 @@ case "$OSTYPE" in
         module_conf_file=/etc/modules-load.d/controllerbuddy.conf
         ;;
      *)
-        log 'Error: This script must either be run in a Git Bash for Windows or a GNU/Linux Bash environment'
+        log 'Error: This script must either be run in a Git Bash for Windows or a GNU/Linux Bash environment.'
         confirm_exit 1
         ;;
 esac
