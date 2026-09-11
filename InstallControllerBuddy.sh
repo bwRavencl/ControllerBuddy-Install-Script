@@ -74,7 +74,13 @@ fi
 function log() {
     local message="$1"
 
-    echo "$message"
+    local target_fd=1
+    if [[ "$message" == [eE]rror* ]]
+    then
+        target_fd=2
+    fi
+    echo "$message" >&"$target_fd"
+
     if [ -n "$log_file" ]
     then
         echo "$(date -R): $message" | grep . >> "$log_file"
