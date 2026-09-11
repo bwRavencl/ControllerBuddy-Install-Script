@@ -72,21 +72,25 @@ else
 fi
 
 function log() {
-    echo "$1"
+    local message="$1"
+
+    echo "$message"
     if [ -n "$log_file" ]
     then
-        echo "$(date -R): $1" | grep . >> "$log_file"
+        echo "$(date -R): $message" | grep . >> "$log_file"
     fi
 }
 
 function confirm_exit() {
+    local exit_code="$1"
+
     echo
     if [ "$reboot_required" = true ]
     then
         log 'IMPORTANT: System configuration has been modified. Please reboot your system!'
     fi
     read -rp 'Press enter to exit'
-    exit "$1"
+    exit "$exit_code"
 }
 
 if [ -z "${BASH_SOURCE[0]}" ]
@@ -143,13 +147,17 @@ esac
 rm -f "$log_file"
 
 function check_retval() {
-    if [ $? -eq 0 ]
+    local retval=$?
+    local error_message="$1"
+    local exit_on_error="${2:-true}"
+
+    if [ "$retval" -eq 0 ]
     then
         log 'Done!'
         echo
     else
-        log "$1"
-        if [ "${2:-true}" = "true" ]
+        log "$error_message"
+        if [ "$exit_on_error" = "true" ]
         then
             confirm_exit 1
         else
@@ -210,28 +218,36 @@ function check_sudo_privileges() {
 }
 
 function install_package() {
+    local apt_package="$1"
+    local yum_package="$2"
+    local pacman_package="$3"
+    local zypper_package="$4"
+
     if command -v apt-get >/dev/null 2>&1
     then
         check_sudo_privileges
-        sudo -- sh -c "apt-get update && apt-get install -y $1"
+        sudo -- sh -c "apt-get update && apt-get install -y $apt_package"
     elif command -v yum >/dev/null 2>&1
     then
         check_sudo_privileges
-        sudo yum -y install "$2"
+        sudo yum -y install "$yum_package"
     elif command -v pacman >/dev/null 2>&1
     then
         check_sudo_privileges
-        sudo pacman -S --noconfirm "$3"
+        sudo pacman -S --noconfirm "$pacman_package"
     elif command -v zypper >/dev/null 2>&1
     then
         check_sudo_privileges
-        sudo zypper --non-interactive install "$4"
+        sudo zypper --non-interactive install "$zypper_package"
     else
         false
     fi
 }
 
 function verify_signature() {
+    local file="$1"
+    local signature_url="$2"
+
     if [ "$os" != windows ]
     then
         log 'Checking if GnuPG is installed...'
@@ -249,7 +265,7 @@ function verify_signature() {
     log 'Verifying signature...'
     local tmp_signature_file &&
     tmp_signature_file=$(mktemp -p "$tmp_dir" -q) &&
-    curl -o "$tmp_signature_file" -fL "$2" &&
+    curl -o "$tmp_signature_file" -fL "$signature_url" &&
     local keyring_asc_content &&
     keyring_asc_content=$(cat << 'EOF'
 -----BEGIN PGP PUBLIC KEY BLOCK-----
@@ -308,11 +324,13 @@ EOF
     local tmp_keyring_file &&
     tmp_keyring_file=$(mktemp -p "$tmp_dir" -q) &&
     echo "$keyring_asc_content" | gpg --dearmor > "$tmp_keyring_file" 2>/dev/null &&
-    gpgv --keyring "$tmp_keyring_file" "$tmp_signature_file" "$1" >/dev/null 2>&1
+    gpgv --keyring "$tmp_keyring_file" "$tmp_signature_file" "$file" >/dev/null 2>&1
     check_retval 'Error: Bad signature'
 }
 
-case "$1" in
+cmd_argument="$1"
+
+case "$cmd_argument" in
     '')
         ;;
     skip-self-update)
@@ -322,7 +340,7 @@ case "$1" in
         uninstall=true
         ;;
      *)
-        log "Error: Invalid command-line argument '$1'"
+        log "Error: Invalid command-line argument '$cmd_argument'"
         exit 1
         ;;
 esac
@@ -359,7 +377,7 @@ then
             echo
             verify_signature "$tmp_install_script_file" "$install_script_url.sig"
             log 'Updating and restarting install script...'
-            bash -c "mv '$tmp_install_script_file' '${BASH_SOURCE[0]}' && chmod +x '${BASH_SOURCE[0]}' && exec '${BASH_SOURCE[0]}' $1"
+            bash -c "mv '$tmp_install_script_file' '${BASH_SOURCE[0]}' && chmod +x '${BASH_SOURCE[0]}' && exec '${BASH_SOURCE[0]}' $cmd_argument"
             check_retval 'Error: Failed to update and restart install script'
             exit 0
         fi
@@ -385,7 +403,10 @@ function check_vjoy_installed() {
 }
 
 function get_vjoy_config_value() {
-    grep "$2" <<< "$1" | cut -d : -f 2 | sed 's/^[ \t]*//;s/[ \t]*$//' | xargs
+    local vjoy_config="$1"
+    local value_name="$2"
+
+    grep "$value_name" <<< "$vjoy_config" | cut -d : -f 2 | sed 's/^[ \t]*//;s/[ \t]*$//' | xargs
 }
 
 function check_vjoy_configured() {
@@ -445,37 +466,45 @@ function remove_controller_buddy() {
 }
 
 function ensure_file_content() {
-    if [ ! -f "$1" ] || [ "$(cat "$1" 2>/dev/null)" != "$2" ]
+    local file="$1"
+    local content="$2"
+
+    if [ ! -f "$file" ] || [ "$(cat "$file" 2>/dev/null)" != "$content" ]
     then
-        log "Initializing '$1'..."
+        log "Initializing '$file'..."
         check_sudo_privileges
-        echo "$2" | sudo tee "$1" >/dev/null
-        check_retval "Error: Failed to write $1"
+        echo "$content" | sudo tee "$file" >/dev/null
+        check_retval "Error: Failed to write $file"
         reboot_required=true
     fi
 }
 
 function create_shortcut() {
+    local name="$1"
+    local target="$2"
+    local arguments="$3"
+    local work_dir="$4"
+
     if [ "$os" = windows ]
     then
-        local shortcut_path="$cb_shortcuts_dir\\$1.lnk"
+        local shortcut_path="$cb_shortcuts_dir\\$name.lnk"
     else
-        local shortcut_path="$cb_shortcuts_dir/$1.desktop"
+        local shortcut_path="$cb_shortcuts_dir/$name.desktop"
     fi
 
     if [ ! -f "$shortcut_path" ]
     then
-        log "Creating '$1' shortcut..."
+        log "Creating '$name' shortcut..."
         if [ "$os" = windows ]
         then
-            mkdir -p "$cb_shortcuts_dir" && create-shortcut --arguments "$3" --work-dir "$4" "$2" "$shortcut_path"
+            mkdir -p "$cb_shortcuts_dir" && create-shortcut --arguments "$arguments" --work-dir "$work_dir" "$target" "$shortcut_path"
         else
-            local exec_value=$2
-            if [ -n "$3" ]
+            local exec_value=$target
+            if [ -n "$arguments" ]
             then
-                exec_value="$exec_value $3"
+                exec_value="$exec_value $arguments"
             fi
-            if [ "$1" = ControllerBuddy ]
+            if [ "$name" = ControllerBuddy ]
             then
                 local icon_value="$cb_lib_dir/ControllerBuddy.png"
                 local terminal_value=false
@@ -483,23 +512,28 @@ function create_shortcut() {
                 local icon_value='text-x-script'
                 local terminal_value=true
             fi
-            mkdir -p "$cb_shortcuts_dir" && echo -e "[Desktop Entry]\nType=Application\nName=$1\nIcon=$icon_value\nExec=$exec_value\nPath=$4\nTerminal=$terminal_value\nCategories=Game" > "$shortcut_path"
+            mkdir -p "$cb_shortcuts_dir" && echo -e "[Desktop Entry]\nType=Application\nName=$name\nIcon=$icon_value\nExec=$exec_value\nPath=$work_dir\nTerminal=$terminal_value\nCategories=Game" > "$shortcut_path"
         fi
-        check_retval "Error: Failed to create '$1' shortcut"
+        check_retval "Error: Failed to create '$name' shortcut"
     fi
 }
 
 function add_environment_variable() {
-    log "Adding $1 environment variable..."
-    setx "$1" "$2"
-    check_retval "Error: Failed to add $1 environment variable"
+    local name="$1"
+    local value="$2"
+
+    log "Adding $name environment variable..."
+    setx "$name" "$value"
+    check_retval "Error: Failed to add $name environment variable"
 }
 
 function install_dcs_integration() {
-    if [ -d "$1" ]
+    local dcs_user_dir="$1"
+
+    if [ -d "$dcs_user_dir" ]
     then
-        log "Found DCS World user directory $1"
-        local dcs_scirpts_dir="$1\\Scripts"
+        log "Found DCS World user directory $dcs_user_dir"
+        local dcs_scirpts_dir="$dcs_user_dir\\Scripts"
 
         local cb_dcs_integration_dir="$dcs_scirpts_dir\\ControllerBuddy-DCS-Integration"
         [[ -d "$cb_dcs_integration_dir" ]] && cb_dcs_integration_dir_exists=true || cb_dcs_integration_dir_exists=false
