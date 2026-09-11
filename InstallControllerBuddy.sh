@@ -32,6 +32,7 @@ cat << 'EOF'
 ╚═════════════════════════════════════════════════════════════╝
 EOF
 )
+readonly banner
 
 if command -v tput >/dev/null 2>&1 && [ "$(tput colors 2>/dev/null || echo 0)" -ge 256 ]
 then
@@ -72,7 +73,7 @@ else
 fi
 
 function log() {
-    local message="$1"
+    local -r message="$1"
 
     local target_fd=1
     if [[ "$message" == [eE]rror* ]]
@@ -88,7 +89,7 @@ function log() {
 }
 
 function confirm_exit() {
-    local exit_code="$1"
+    local -r exit_code="$1"
 
     echo
     if [ "$reboot_required" = true ]
@@ -106,43 +107,45 @@ then
 fi
 
 script_name=$(basename "${BASH_SOURCE[0]}")
+readonly script_name
 
 case "$OSTYPE" in
     cygwin | msys)
-        os=windows
-        log_file="$TMP\\InstallControllerBuddy.log"
-        vjoy_desired_version='2.2.2.0'
-        cb_parent_dir="$LOCALAPPDATA\\Programs"
-        cb_dir="$cb_parent_dir\\ControllerBuddy"
-        cb_bin_dir="$cb_dir"
-        cb_exe=ControllerBuddy.exe
-        cb_exe_path="$cb_bin_dir\\$cb_exe"
-        modules_path="$cb_dir\\runtime\\lib\\modules"
-        cb_profiles_dir="$USERPROFILE\\Documents\\ControllerBuddy-Profiles"
-        cb_shortcuts_dir="$APPDATA\\Microsoft\\Windows\\Start Menu\\Programs\\ControllerBuddy"
-        saved_games_dir="$USERPROFILE\\Saved Games"
-        dcs_stable_user_dir="$saved_games_dir\\DCS"
-        dcs_open_beta_user_dir="$saved_games_dir\\DCS.openbeta"
+        readonly os=windows
+        readonly log_file="$TMP\\InstallControllerBuddy.log"
+        readonly vjoy_desired_version='2.2.2.0'
+        readonly cb_parent_dir="$LOCALAPPDATA\\Programs"
+        readonly cb_dir="$cb_parent_dir\\ControllerBuddy"
+        readonly cb_bin_dir="$cb_dir"
+        readonly cb_exe=ControllerBuddy.exe
+        readonly cb_exe_path="$cb_bin_dir\\$cb_exe"
+        readonly modules_path="$cb_dir\\runtime\\lib\\modules"
+        readonly cb_profiles_dir="$USERPROFILE\\Documents\\ControllerBuddy-Profiles"
+        readonly cb_shortcuts_dir="$APPDATA\\Microsoft\\Windows\\Start Menu\\Programs\\ControllerBuddy"
+        readonly saved_games_dir="$USERPROFILE\\Saved Games"
+        readonly dcs_stable_user_dir="$saved_games_dir\\DCS"
+        readonly dcs_open_beta_user_dir="$saved_games_dir\\DCS.openbeta"
         ;;
     linux*)
-        os=linux
-        log_file="/tmp/InstallControllerBuddy.log"
-        cb_parent_dir="$HOME"
-        cb_dir="$cb_parent_dir/ControllerBuddy"
-        cb_bin_dir="$cb_dir/bin"
-        cb_lib_dir="$cb_dir/lib"
-        cb_exe=ControllerBuddy
-        cb_exe_path="$cb_bin_dir/$cb_exe"
-        modules_path="$cb_dir/lib/runtime/lib/modules"
+        readonly os=linux
+        readonly log_file="/tmp/InstallControllerBuddy.log"
+        readonly cb_parent_dir="$HOME"
+        readonly cb_dir="$cb_parent_dir/ControllerBuddy"
+        readonly cb_bin_dir="$cb_dir/bin"
+        readonly cb_lib_dir="$cb_dir/lib"
+        readonly cb_exe=ControllerBuddy
+        readonly cb_exe_path="$cb_bin_dir/$cb_exe"
+        readonly modules_path="$cb_dir/lib/runtime/lib/modules"
         if command -v xdg-user-dir >/dev/null 2>&1
         then
             cb_profiles_dir="$(xdg-user-dir DOCUMENTS)/ControllerBuddy-Profiles"
         else
             cb_profiles_dir="$HOME/ControllerBuddy-Profiles"
         fi
-        cb_shortcuts_dir="$HOME/.local/share/applications/ControllerBuddy"
-        udev_rules_file=/etc/udev/rules.d/60-controllerbuddy.rules
-        module_conf_file=/etc/modules-load.d/controllerbuddy.conf
+        readonly cb_profiles_dir
+        readonly cb_shortcuts_dir="$HOME/.local/share/applications/ControllerBuddy"
+        readonly udev_rules_file=/etc/udev/rules.d/60-controllerbuddy.rules
+        readonly module_conf_file=/etc/modules-load.d/controllerbuddy.conf
         ;;
      *)
         log 'Error: This script must either be run in a Git Bash for Windows or a GNU/Linux Bash environment.'
@@ -153,9 +156,9 @@ esac
 rm -f "$log_file"
 
 function check_retval() {
-    local retval=$?
-    local error_message="$1"
-    local exit_on_error="${2:-true}"
+    local -r retval=$?
+    local -r error_message="$1"
+    local -r exit_on_error="${2:-true}"
 
     if [ "$retval" -eq 0 ]
     then
@@ -193,6 +196,7 @@ function check_retval() {
 
 log 'Determining system architecture...'
 arch=$(uname -m)
+readonly arch
 check_retval 'Error: Failed to determine system architecture'
 
 if ! { [ "$arch" = x86_64 ] || {  [ "$os" = linux ] && [ "$arch" = aarch64 ]; }; }
@@ -202,6 +206,7 @@ then
 fi
 
 tmp_dir=$(mktemp -d -q)
+readonly tmp_dir
 trap 'rm -rf $tmp_dir' EXIT
 
 function check_sudo_privileges() {
@@ -224,10 +229,10 @@ function check_sudo_privileges() {
 }
 
 function install_package() {
-    local apt_package="$1"
-    local yum_package="$2"
-    local pacman_package="$3"
-    local zypper_package="$4"
+    local -r apt_package="$1"
+    local -r yum_package="$2"
+    local -r pacman_package="$3"
+    local -r zypper_package="$4"
 
     if command -v apt-get >/dev/null 2>&1
     then
@@ -251,8 +256,8 @@ function install_package() {
 }
 
 function verify_signature() {
-    local file="$1"
-    local signature_url="$2"
+    local -r file="$1"
+    local -r signature_url="$2"
 
     if [ "$os" != windows ]
     then
@@ -334,7 +339,7 @@ EOF
     check_retval 'Error: Bad signature'
 }
 
-cmd_argument="$1"
+readonly cmd_argument="$1"
 
 case "$cmd_argument" in
     '')
@@ -395,7 +400,7 @@ fi
 
 function check_vjoy_installed() {
     log "Checking if vJoy $vjoy_desired_version is installed..."
-    local vjoy_uninstall_registry_key='HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{8E31F76F-74C3-47F1-9550-E041EEDC5FBB}_is1'
+    local -r vjoy_uninstall_registry_key='HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{8E31F76F-74C3-47F1-9550-E041EEDC5FBB}_is1'
     vjoy_dir=$(REG QUERY "$vjoy_uninstall_registry_key" //V InstallLocation 2>/dev/null | grep InstallLocation | sed -n -e 's/^.*REG_SZ    //p' | sed 's/\\*$//')
     vjoy_config_exe_path="$vjoy_dir\\x64\\vJoyConfig.exe"
     vjoy_current_version=$(REG QUERY "$vjoy_uninstall_registry_key" //V DisplayVersion 2>/dev/null | grep DisplayVersion | sed -n -e 's/^.*REG_SZ    //p')
@@ -409,28 +414,21 @@ function check_vjoy_installed() {
 }
 
 function get_vjoy_config_value() {
-    local vjoy_config="$1"
-    local value_name="$2"
+    local -r vjoy_config="$1"
+    local -r value_name="$2"
 
     grep "$value_name" <<< "$vjoy_config" | cut -d : -f 2 | sed 's/^[ \t]*//;s/[ \t]*$//' | xargs
 }
 
 function check_vjoy_configured() {
     log 'Checking if vJoy is configured correctly...'
-    local vjoy_config
-    vjoy_config=$("$vjoy_config_exe_path" -t 1)
-    local vjoy_config_device
-    vjoy_config_device=$(get_vjoy_config_value "$vjoy_config" Device)
-    local vjoy_config_buttons
-    vjoy_config_buttons=$(get_vjoy_config_value "$vjoy_config" Buttons)
-    local vjoy_config_descrete_povs
-    vjoy_config_descrete_povs=$(get_vjoy_config_value "$vjoy_config" 'Descrete POVs')
-    local vjoy_config_continuous_povs
-    vjoy_config_continuous_povs=$(get_vjoy_config_value "$vjoy_config" 'Continous POVs')
-    local vjoy_config_axes
-    vjoy_config_axes=$(get_vjoy_config_value "$vjoy_config" Axes)
-    local vjoy_config_ffb_effects
-    vjoy_config_ffb_effects=$(get_vjoy_config_value "$vjoy_config" 'FFB Effects')
+    local -r vjoy_config=$("$vjoy_config_exe_path" -t 1)
+    local -r vjoy_config_device=$(get_vjoy_config_value "$vjoy_config" Device)
+    local -r vjoy_config_buttons=$(get_vjoy_config_value "$vjoy_config" Buttons)
+    local -r vjoy_config_descrete_povs=$(get_vjoy_config_value "$vjoy_config" 'Descrete POVs')
+    local -r vjoy_config_continuous_povs=$(get_vjoy_config_value "$vjoy_config" 'Continous POVs')
+    local -r vjoy_config_axes=$(get_vjoy_config_value "$vjoy_config" Axes)
+    local -r vjoy_config_ffb_effects=$(get_vjoy_config_value "$vjoy_config" 'FFB Effects')
     if [ "$vjoy_config_device" = 1 ] &&
         [ "$vjoy_config_buttons" = 128 ] &&
         [ "$vjoy_config_descrete_povs" = 0 ] &&
@@ -472,8 +470,8 @@ function remove_controller_buddy() {
 }
 
 function ensure_file_content() {
-    local file="$1"
-    local content="$2"
+    local -r file="$1"
+    local -r content="$2"
 
     if [ ! -f "$file" ] || [ "$(cat "$file" 2>/dev/null)" != "$content" ]
     then
@@ -486,16 +484,16 @@ function ensure_file_content() {
 }
 
 function create_shortcut() {
-    local name="$1"
-    local target="$2"
-    local arguments="$3"
-    local work_dir="$4"
+    local -r name="$1"
+    local -r target="$2"
+    local -r arguments="$3"
+    local -r work_dir="$4"
 
     if [ "$os" = windows ]
     then
-        local shortcut_path="$cb_shortcuts_dir\\$name.lnk"
+        local -r shortcut_path="$cb_shortcuts_dir\\$name.lnk"
     else
-        local shortcut_path="$cb_shortcuts_dir/$name.desktop"
+        local -r shortcut_path="$cb_shortcuts_dir/$name.desktop"
     fi
 
     if [ ! -f "$shortcut_path" ]
@@ -510,13 +508,14 @@ function create_shortcut() {
             then
                 exec_value="$exec_value $arguments"
             fi
+            readonly exec_value
             if [ "$name" = ControllerBuddy ]
             then
-                local icon_value="$cb_lib_dir/ControllerBuddy.png"
-                local terminal_value=false
+                local -r icon_value="$cb_lib_dir/ControllerBuddy.png"
+                local -r terminal_value=false
             else
-                local icon_value='text-x-script'
-                local terminal_value=true
+                local -r icon_value='text-x-script'
+                local -r terminal_value=true
             fi
             mkdir -p "$cb_shortcuts_dir" && echo -e "[Desktop Entry]\nType=Application\nName=$name\nIcon=$icon_value\nExec=$exec_value\nPath=$work_dir\nTerminal=$terminal_value\nCategories=Game" > "$shortcut_path"
         fi
@@ -525,8 +524,8 @@ function create_shortcut() {
 }
 
 function add_environment_variable() {
-    local name="$1"
-    local value="$2"
+    local -r name="$1"
+    local -r value="$2"
 
     log "Adding $name environment variable..."
     setx "$name" "$value"
@@ -534,14 +533,14 @@ function add_environment_variable() {
 }
 
 function install_dcs_integration() {
-    local dcs_user_dir="$1"
+    local -r dcs_user_dir="$1"
 
     if [ -d "$dcs_user_dir" ]
     then
         log "Found DCS World user directory $dcs_user_dir"
-        local dcs_scirpts_dir="$dcs_user_dir\\Scripts"
+        local -r dcs_scirpts_dir="$dcs_user_dir\\Scripts"
 
-        local cb_dcs_integration_dir="$dcs_scirpts_dir\\ControllerBuddy-DCS-Integration"
+        local -r cb_dcs_integration_dir="$dcs_scirpts_dir\\ControllerBuddy-DCS-Integration"
         [[ -d "$cb_dcs_integration_dir" ]] && cb_dcs_integration_dir_exists=true || cb_dcs_integration_dir_exists=false
         if [ "$cb_dcs_integration_dir_exists" = true ]
         then
@@ -560,7 +559,7 @@ function install_dcs_integration() {
             check_retval 'Error: Failed to clone ControllerBuddy-DCS-Integration repository'
         fi
 
-        local export_lua_path="$dcs_scirpts_dir\\Export.lua"
+        local -r export_lua_path="$dcs_scirpts_dir\\Export.lua"
         log "Updating $export_lua_path for ControllerBuddy-DCS-Integration"
         if [ "$uninstall" = true ]
         then
@@ -568,7 +567,7 @@ function install_dcs_integration() {
             check_retval "Error: Failed to remove ControllerBuddy-DCS-Integration from $export_lua_path"
         else
             touch -a "$export_lua_path"
-            local export_lua_line='dofile(lfs.writedir()..[[Scripts\ControllerBuddy-DCS-Integration\ControllerBuddy.lua]])'
+            local -r export_lua_line='dofile(lfs.writedir()..[[Scripts\ControllerBuddy-DCS-Integration\ControllerBuddy.lua]])'
             # shellcheck disable=SC1003
             grep -qxF "$export_lua_line" "$export_lua_path" || { sed -i '$a\' "$export_lua_path" && echo "$export_lua_line" >> "$export_lua_path" && unix2dos -q "$export_lua_path" ; }
             check_retval "Error: Failed to add ControllerBuddy-DCS-Integration to $export_lua_path"
