@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 : '
 Copyright (C) 2022  Matteo Hausner
@@ -806,7 +806,7 @@ else
         script_command="$script_path"
         script_work_dir=%TMP%
     else
-        script_command="/bin/bash $script_path"
+        script_command="/usr/bin/env bash $script_path"
         script_work_dir=/tmp
     fi
     create_shortcut 'Update ControllerBuddy' "$script_command" '' "$script_work_dir"
