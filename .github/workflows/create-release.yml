@@ -5,6 +5,17 @@ on:
     branches:
       - master
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
 env:
   INSTALL_SCRIPT_FILE: InstallControllerBuddy.sh
 
@@ -14,10 +25,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38 # 2.0.0
       - name: Lint Markdown Files
-        uses: DavidAnson/markdownlint-cli2-action@21c1be1b93ad9ed58fa840aacc3f279cde2a72ff #v24
+        uses: DavidAnson/markdownlint-cli2-action@21c1be1b93ad9ed58fa840aacc3f279cde2a72ff # v24
         with:
           globs: '**/*.md'
 
@@ -29,13 +42,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
       - name: Compare Scripts
         id: compare-scripts
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           script_changed=true
-          if gh release download --pattern "${{ env.INSTALL_SCRIPT_FILE }}" --output "latest_${{ env.INSTALL_SCRIPT_FILE }}" && cmp -s "${{ env.INSTALL_SCRIPT_FILE }}" "latest_${{ env.INSTALL_SCRIPT_FILE }}"
+          if gh release download --pattern "$INSTALL_SCRIPT_FILE" --output "latest_$INSTALL_SCRIPT_FILE" \
+            && cmp -s "$INSTALL_SCRIPT_FILE" "latest_$INSTALL_SCRIPT_FILE"
           then
             script_changed=false
             echo 'Script has not changed since the last release.'
@@ -53,6 +69,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
+          persist-credentials: false
       - name: Generate Tag Name
         id: generate-tag-name
         run: |
@@ -62,29 +79,36 @@ jobs:
             tag_name+='.dirty'
           fi
           echo "tag_name=$tag_name" >> "$GITHUB_OUTPUT"
-      - name: Tag Commit
-        uses: tvdias/github-tagger@ed7350546e3e503b5e942dffd65bc8751a95e49d # v0.0.2
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ steps.generate-tag-name.outputs.tag_name }}
       - name: Import GPG Key
+        id: import-gpg
         uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PRIVATE_KEY_PASSPHRASE }}
       - name: Sign Script
         id: sign-script
+        env:
+          GPG_KEY_ID: ${{ steps.import-gpg.outputs.fingerprint }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PRIVATE_KEY_PASSPHRASE }}
         run: |
-          signature_file="${{ env.INSTALL_SCRIPT_FILE }}.sig"
-          gpg --local-user 8590BB74C0F559F8AC911C1D8058553A1FD36B23 --pinentry-mode loopback --passphrase ${{ secrets.GPG_PRIVATE_KEY_PASSPHRASE }} --detach-sig --output "$signature_file" --yes ${{ env.INSTALL_SCRIPT_FILE }}
+          signature_file="$INSTALL_SCRIPT_FILE.sig"
+          gpg --batch --yes \
+            --local-user "$GPG_KEY_ID" \
+            --pinentry-mode loopback \
+            --passphrase-fd 0 \
+            --detach-sig \
+            --output "$signature_file" \
+            "$INSTALL_SCRIPT_FILE" <<< "$GPG_PASSPHRASE"
           echo "signature_file=$signature_file" >> "$GITHUB_OUTPUT"
       - name: Release
         uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3
         with:
           name: ControllerBuddy-Install-Script-${{ steps.generate-tag-name.outputs.tag_name }}
           tag_name: ${{ steps.generate-tag-name.outputs.tag_name }}
+          target_commitish: ${{ github.sha }}
           draft: false
           prerelease: false
+          fail_on_unmatched_files: true
           files: |
             ${{ env.INSTALL_SCRIPT_FILE }}
             ${{ steps.sign-script.outputs.signature_file }}
