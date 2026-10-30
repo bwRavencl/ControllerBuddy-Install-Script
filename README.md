@@ -1,35 +1,23 @@
 <!-- markdownlint-disable-file line-length -->
 # ControllerBuddy-Install-Script
 
+## 📖 Description
+
+**The recommended way to install and update [ControllerBuddy](https://controllerbuddy.org).**
+
+Get fully set up in seconds.
+This script handles installing and updating ControllerBuddy and the official [ControllerBuddy-Profiles](https://github.com/bwRavencl/ControllerBuddy-Profiles) effortlessly.
+
 ## 🎬 Showcase
 
 [![Showcase Video](showcase.webp)](https://www.youtube.com/watch?v=AYBr_zzQCqA)  
 *<small>Click to open on YouTube</small>* <!-- markdownlint-disable-line no-inline-html -->
 
-## 📖 Description
+## 🚀 Usage
 
-This script streamlines installing and updating [ControllerBuddy](https://controllerbuddy.org) and the official [ControllerBuddy-Profiles](https://github.com/bwRavencl/ControllerBuddy-Profiles) on Windows x86-64 and Linux (x86-64 and aarch64) systems.
+Use the script to manage ControllerBuddy throughout its lifecycle, from initial setup to regular updates and full removal.
 
-The script performs the following tasks:
-
-- Checks for the latest version of `InstallControllerBuddy.sh` and updates itself when necessary
-- Ensures you have the correct version of [vJoy](https://github.com/BrunnerInnovation/vJoy) installed (*only on Windows*)
-- Configures a vJoy device for ControllerBuddy (*only on Windows*)
-- Ensures you have [GnuPG](https://gnupg.org), [cUrl](https://curl.se) and [Git](https://git-scm.com) installed (*only on Linux*)
-- Configures [udev](https://www.freedesktop.org/software/systemd/man/udev.html) and [uinput](https://www.kernel.org/doc/html/latest/input/uinput.html) for ControllerBuddy if necessary (*only on Linux*)
-- Downloads and installs the latest release of ControllerBuddy
-- If missing, creates the following shortcuts in the Start menu:
-  - `ControllerBuddy` (launches ControllerBuddy with arguments: `-autostart local -tray`)
-  - `Update ControllerBuddy` (performs the same steps as if you would run `InstallControllerBuddy.sh`)
-  - `Uninstall ControllerBuddy` (removes ControllerBuddy by launching `InstallControllerBuddy.sh uninstall`)
-- Ensures you have the latest version of the official [ControllerBuddy-Profiles](https://github.com/bwRavencl/ControllerBuddy-Profiles) installed into your user's `Documents` folder
-- Executes the `Configure.ps1` scripts to configure your applications for usage with the official ControllerBuddy-Profiles
-  (*only on Windows*)
-- Sets up [ControllerBuddy-DCS-Integration](https://github.com/bwRavencl/ControllerBuddy-DCS-Integration) if [DCS World](https://www.digitalcombatsimulator.com) is present
-  (*only on Windows*)
-- Stops ControllerBuddy when updating and restarts it later (with arguments: `-autostart local -tray`)
-
-## ⬇️ Installing
+### ⬇️ Installing
 
 1. Right click [here](https://raw.githubusercontent.com/bwRavencl/ControllerBuddy-Install-Script/master/InstallControllerBuddy.sh) <!-- markdownlint-disable-line descriptive-link-text -->
    and select *Save link as* to download `InstallControllerBuddy.sh`
@@ -47,16 +35,37 @@ The script performs the following tasks:
 3. Make sure your gamepad is connected
 4. Double-click the downloaded file `InstallControllerBuddy.sh` to start installing / updating
 
-## 🔄 Updating
+### 🔄 Updating
 
 Run `Update ControllerBuddy` from the Start menu to get the latest updates for ControllerBuddy and the ControllerBuddy-Profiles.
 
 > [!IMPORTANT]
 > Always make sure that your gamepad is connected before running the script!
 
-## 🗑️ Uninstalling
+### 🗑️ Uninstalling
 
 If you wish to remove ControllerBuddy from your system, run `Uninstall ControllerBuddy` from the Start menu.
+
+## ⚙️ What It Does
+
+The script carries out the following tasks and system modifications:
+
+- Checks for the latest version of `InstallControllerBuddy.sh` and updates itself when necessary
+- Ensures you have the correct version of [vJoy](https://github.com/BrunnerInnovation/vJoy) installed (*only on Windows*)
+- Configures a vJoy device for ControllerBuddy (*only on Windows*)
+- Ensures you have [GnuPG](https://gnupg.org), [cUrl](https://curl.se), [Git](https://git-scm.com), and [psmisc](https://gitlab.com/psmisc/psmisc) installed (*only on Linux*)
+- Configures [udev](https://www.freedesktop.org/software/systemd/man/udev.html) and [uinput](https://www.kernel.org/doc/html/latest/input/uinput.html) for ControllerBuddy if necessary (*only on Linux*)
+- Downloads and installs the latest release of ControllerBuddy
+- If missing, creates the following shortcuts in the Start menu:
+  - `ControllerBuddy` (launches ControllerBuddy with arguments: `-autostart local -tray`)
+  - `Update ControllerBuddy` (performs the same steps as if you would run `InstallControllerBuddy.sh`)
+  - `Uninstall ControllerBuddy` (removes ControllerBuddy by launching `InstallControllerBuddy.sh uninstall`)
+- Ensures you have the latest version of the official [ControllerBuddy-Profiles](https://github.com/bwRavencl/ControllerBuddy-Profiles) installed into your user's `Documents` folder
+- Executes the `Configure.ps1` scripts to configure your applications for usage with the official ControllerBuddy-Profiles
+  (*only on Windows*)
+- Sets up [ControllerBuddy-DCS-Integration](https://github.com/bwRavencl/ControllerBuddy-DCS-Integration) if [DCS World](https://www.digitalcombatsimulator.com) is present
+  (*only on Windows*)
+- Stops ControllerBuddy when updating and restarts it later (with arguments: `-autostart local -tray`)
 
 ## ⚖️ License
 
