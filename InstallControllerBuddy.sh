@@ -64,6 +64,7 @@ check_retval() {
     fi
 
     echo
+    local response
     while true
     do
         read -rp 'Would you like to continue anyway? [y/N] ' response
