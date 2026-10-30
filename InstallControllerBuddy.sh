@@ -453,9 +453,26 @@ function check_cb_installed_version {
 function remove_controller_buddy() {
     if [ -d "$cb_dir" ]
     then
+        if [ "$os" = windows ]
+        then
+            local -r stop_command=(taskkill -F -IM "$cb_exe")
+        else
+            log 'Checking if killall is installed...'
+            if command -v killall >/dev/null 2>&1
+            then
+                log 'Yes'
+            else
+                log 'No - installing psmisc...'
+                install_package 'psmisc' 'psmisc' 'psmisc' 'psmisc'
+                check_retval 'Error: Failed to install psmisc. Please restart this script after manually installing psmisc.'
+            fi
+            echo
+
+            local -r stop_command=(killall ControllerBuddy)
+        fi
+
         log 'Stopping any old ControllerBuddy process...'
-        if { [ "$os" = windows ] && taskkill -F -IM $cb_exe >/dev/null 2>&1 ; } ||
-            { [ "$os" = linux ] && killall ControllerBuddy 2>/dev/null ; }
+        if "${stop_command[@]}" >/dev/null 2>&1
         then
             sleep 2
             if [ "$uninstall" != true ]
@@ -465,7 +482,7 @@ function remove_controller_buddy() {
         fi
         log 'Done!'
         echo
-        log 'Removing ControllerBuddy'
+        log 'Removing ControllerBuddy...'
         find "$cb_dir" -mindepth 1 -not -name "$script_name" -not -path "$cb_bin_dir" -delete
         check_retval 'Error: Failed to remove ControllerBuddy'
     fi
