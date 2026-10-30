@@ -579,17 +579,20 @@ function install_dcs_integration() {
         fi
 
         local -r export_lua_path="$dcs_scirpts_dir\\Export.lua"
-        log "Updating $export_lua_path for ControllerBuddy-DCS-Integration"
-        if [ "$uninstall" = true ]
+        if [ "$uninstall" != true ] || [ -f "$export_lua_path" ]
         then
-            sed -i "/\ControllerBuddy\b/d" "$export_lua_path"
-            check_retval "Error: Failed to remove ControllerBuddy-DCS-Integration from $export_lua_path"
-        else
-            touch -a "$export_lua_path"
-            local -r export_lua_line='dofile(lfs.writedir()..[[Scripts\ControllerBuddy-DCS-Integration\ControllerBuddy.lua]])'
-            # shellcheck disable=SC1003
-            grep -qxF "$export_lua_line" "$export_lua_path" || { sed -i '$a\' "$export_lua_path" && echo "$export_lua_line" >> "$export_lua_path" && unix2dos -q "$export_lua_path" ; }
-            check_retval "Error: Failed to add ControllerBuddy-DCS-Integration to $export_lua_path"
+            log "Updating $export_lua_path for ControllerBuddy-DCS-Integration"
+            if [ "$uninstall" = true ]
+            then
+                sed -i '/\bControllerBuddy\b/d' "$export_lua_path"
+                check_retval "Error: Failed to remove ControllerBuddy-DCS-Integration from $export_lua_path"
+            else
+                touch -a "$export_lua_path"
+                local -r export_lua_line='dofile(lfs.writedir()..[[Scripts\ControllerBuddy-DCS-Integration\ControllerBuddy.lua]])'
+                # shellcheck disable=SC1003
+                grep -qxF "$export_lua_line" "$export_lua_path" || { sed -i '$a\' "$export_lua_path" && echo "$export_lua_line" >> "$export_lua_path" && unix2dos -q "$export_lua_path" ; }
+                check_retval "Error: Failed to add ControllerBuddy-DCS-Integration to $export_lua_path"
+            fi
         fi
 
         if REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_EXECUTABLE >/dev/null 2>&1
