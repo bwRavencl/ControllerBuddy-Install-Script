@@ -781,6 +781,7 @@ else
         else
             log "Determining download URL..."
             archive_url=$(grep browser_download_url <<< "$cb_json" | grep "$os-${arch//_/-}" | grep -v .sig | cut -d : -f 2,3 | tr -d \",' ')
+            [ -n "$archive_url" ]
             check_retval "Error: Failed to determine download URL for $cb_latest_version"
 
             log "Downloading ControllerBuddy $cb_latest_version..."
