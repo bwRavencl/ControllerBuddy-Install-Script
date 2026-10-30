@@ -522,7 +522,7 @@ function create_shortcut() {
         then
             mkdir -p "$cb_shortcuts_dir" && create-shortcut --arguments "$arguments" --work-dir "$work_dir" "$target" "$shortcut_path"
         else
-            local exec_value=$target
+            local exec_value="\"${target//%/%%}\""
             if [ -n "$arguments" ]
             then
                 exec_value="$exec_value $arguments"
@@ -851,13 +851,15 @@ else
     if [ "$os" = windows ]
     then
         script_command="$script_path"
+        update_arguments=''
         script_work_dir=%TMP%
     else
-        script_command="/usr/bin/env bash $script_path"
+        script_command=/usr/bin/env
+        update_arguments="bash \"${script_path//%/%%}\""
         script_work_dir=/tmp
     fi
-    create_shortcut 'Update ControllerBuddy' "$script_command" '' "$script_work_dir"
-    create_shortcut 'Uninstall ControllerBuddy' "$script_command" uninstall "$script_work_dir"
+    create_shortcut 'Update ControllerBuddy' "$script_command" "$update_arguments" "$script_work_dir"
+    create_shortcut 'Uninstall ControllerBuddy' "$script_command" "${update_arguments:+$update_arguments }uninstall" "$script_work_dir"
 
     check_cb_installed_version
     if [ -z "$cb_installed_version" ]
