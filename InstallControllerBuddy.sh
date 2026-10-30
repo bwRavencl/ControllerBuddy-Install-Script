@@ -925,7 +925,7 @@ else
         if [ "$run_config_scripts" != true ] && [ "$run_config_scripts" != false ]
         then
             echo The ControllerBuddy-Profiles configuration scripts can automatically adjust the input settings of the following applications for use with the official profiles:
-            find "$cb_profiles_dir/configs" -mindepth 2 -maxdepth 2 -name 'Configure.ps1' | cut -d / -f 3 | tr _ ' ' | xargs -I name echo - name
+            find "$cb_profiles_dir/configs" -mindepth 2 -maxdepth 2 -name 'Configure.ps1' -printf '%h\n' | sed 's#.*/##' | tr _ ' ' | xargs -I name echo - name
             echo
             echo If you intend to use the official profiles, it is recommended to allow the scripts to apply the required changes.
             echo Warning: To avoid losing your current input configurations, back them up before running the scripts.
@@ -968,7 +968,7 @@ else
                 echo
                 while true;
                 do
-                    read -rp \"Would you like to run the configuration script for \$(echo \"\$1\" | cut -d / -f 3 | tr _ ' ')? [yes/no] \" response
+                    read -rp \"Would you like to run the configuration script for \$(dir=\${1%/*}; echo \"\${dir##*/}\" | tr _ ' ')? [yes/no] \" response
                     case \$response in
                         [Yy]*)
                             break
