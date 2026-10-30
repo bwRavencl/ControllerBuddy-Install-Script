@@ -586,7 +586,9 @@ install_dcs_integration() {
         then
             if [ "$uninstall" = true ]
             then
+                log "Removing '$cb_dcs_integration_dir'..."
                 rm -rf "$cb_dcs_integration_dir"
+                check_retval "Error: Failed to remove '$cb_dcs_integration_dir'"
             else
                 log 'Pulling ControllerBuddy-DCS-Integration repository...'
                 git -C "$cb_dcs_integration_dir" pull origin master --rebase
