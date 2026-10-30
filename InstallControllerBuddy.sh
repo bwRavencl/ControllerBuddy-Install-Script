@@ -151,7 +151,11 @@ case "$OSTYPE" in
         ;;
 esac
 
-rm -f "$log_file"
+if [ -z "$CB_INSTALL_SCRIPT_RESTARTED" ]
+then
+    rm -f "$log_file"
+fi
+unset CB_INSTALL_SCRIPT_RESTARTED
 
 check_retval() {
     local -r retval=$?
@@ -398,7 +402,7 @@ then
                 chmod +x "${BASH_SOURCE[0]}"
                 check_retval 'Error: Failed to update install script'
                 rm -rf "$tmp_dir"
-                exec bash "${BASH_SOURCE[0]}" skip-self-update
+                CB_INSTALL_SCRIPT_RESTARTED=1 exec bash "${BASH_SOURCE[0]}" skip-self-update
             fi
         else
             log 'Warning: Failed to obtain latest install script from GitHub'
