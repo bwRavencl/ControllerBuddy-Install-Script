@@ -925,7 +925,7 @@ else
             echo
             echo If you intend to use the official profiles, it is recommended to allow the scripts to apply the required changes.
             echo Warning: To avoid losing your current input configurations, back them up before running the scripts.
-            echo Note: Choosing 'always' will allow all scripts to run automatically whenever ControllerBuddy is updated, without further prompts.
+            echo "Note: Choosing 'always' will allow all scripts to run automatically whenever ControllerBuddy is updated, without further prompts."
             echo
 
             while true
