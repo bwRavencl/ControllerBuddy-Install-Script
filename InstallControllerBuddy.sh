@@ -578,7 +578,7 @@ install_dcs_integration() {
 
     if [ -d "$dcs_user_dir" ]
     then
-        log "Found DCS World user directory $dcs_user_dir"
+        log "Found DCS World user directory '$dcs_user_dir'"
         local -r dcs_scripts_dir="$dcs_user_dir\\Scripts"
 
         local -r cb_dcs_integration_dir="$dcs_scripts_dir\\ControllerBuddy-DCS-Integration"
@@ -602,17 +602,17 @@ install_dcs_integration() {
         local -r export_lua_path="$dcs_scripts_dir\\Export.lua"
         if [ "$uninstall" != true ] || [ -f "$export_lua_path" ]
         then
-            log "Updating $export_lua_path for ControllerBuddy-DCS-Integration"
+            log "Updating '$export_lua_path' for ControllerBuddy-DCS-Integration..."
             if [ "$uninstall" = true ]
             then
                 sed -i '/\bControllerBuddy\b/d' "$export_lua_path"
-                check_retval "Error: Failed to remove ControllerBuddy-DCS-Integration from $export_lua_path"
+                check_retval "Error: Failed to remove ControllerBuddy-DCS-Integration from '$export_lua_path'"
             else
                 touch -a "$export_lua_path"
                 local -r export_lua_line='dofile(lfs.writedir()..[[Scripts\ControllerBuddy-DCS-Integration\ControllerBuddy.lua]])'
                 # shellcheck disable=SC1003
                 grep -qxF "$export_lua_line" "$export_lua_path" || { sed -i '$a\' "$export_lua_path" && echo "$export_lua_line" >> "$export_lua_path" && unix2dos -q "$export_lua_path" ; }
-                check_retval "Error: Failed to add ControllerBuddy-DCS-Integration to $export_lua_path"
+                check_retval "Error: Failed to add ControllerBuddy-DCS-Integration to '$export_lua_path'"
             fi
         fi
 
@@ -711,7 +711,7 @@ else
 
         if [ "$vjoy_installed" = true ]
         then
-            log "Found vJoy $vjoy_current_version in $vjoy_dir"
+            log "Found vJoy $vjoy_current_version in '$vjoy_dir'"
             check_vjoy_configured
             if [ "$vjoy_configured" = true ]
             then
@@ -806,7 +806,7 @@ else
             log "ControllerBuddy $cb_installed_version is up-to-date!"
             echo
         else
-            log "Determining download URL..."
+            log 'Determining download URL...'
             archive_url=$(grep browser_download_url <<< "$cb_json" | grep "$os-${arch//_/-}" | grep -v .sig | cut -d : -f 2,3 | tr -d \",' ')
             [ -n "$archive_url" ]
             check_retval "Error: Failed to determine download URL for $cb_latest_version"
@@ -836,13 +836,13 @@ else
 
     create_shortcut ControllerBuddy "$cb_exe_path" '-autostart local -tray' "$cb_dir"
 
-    script_path="$cb_bin_dir/$script_name"
+    readonly script_path="$cb_bin_dir/$script_name"
 
     if [ ! "$(dirname "${BASH_SOURCE[0]}")" -ef "$cb_bin_dir" ]
     then
         log "Updating local copy of $script_name..."
         cp "${BASH_SOURCE[0]}" "$script_path"
-        check_retval "Error: Failed to copy $script_name to $script_path"
+        check_retval "Error: Failed to copy $script_name to '$script_path'"
     fi
 
     if [ "$os" = windows ]
