@@ -573,9 +573,9 @@ install_dcs_integration() {
     if [ -d "$dcs_user_dir" ]
     then
         log "Found DCS World user directory $dcs_user_dir"
-        local -r dcs_scirpts_dir="$dcs_user_dir\\Scripts"
+        local -r dcs_scripts_dir="$dcs_user_dir\\Scripts"
 
-        local -r cb_dcs_integration_dir="$dcs_scirpts_dir\\ControllerBuddy-DCS-Integration"
+        local -r cb_dcs_integration_dir="$dcs_scripts_dir\\ControllerBuddy-DCS-Integration"
         [[ -d "$cb_dcs_integration_dir" ]] && cb_dcs_integration_dir_exists=true || cb_dcs_integration_dir_exists=false
         if [ "$cb_dcs_integration_dir_exists" = true ]
         then
@@ -594,7 +594,7 @@ install_dcs_integration() {
             check_retval 'Error: Failed to clone ControllerBuddy-DCS-Integration repository'
         fi
 
-        local -r export_lua_path="$dcs_scirpts_dir\\Export.lua"
+        local -r export_lua_path="$dcs_scripts_dir\\Export.lua"
         if [ "$uninstall" != true ] || [ -f "$export_lua_path" ]
         then
             log "Updating $export_lua_path for ControllerBuddy-DCS-Integration"
