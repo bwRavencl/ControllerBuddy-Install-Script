@@ -201,7 +201,7 @@ readonly arch
 
 if ! { [ "$arch" = x86_64 ] || {  [ "$os" = linux ] && [ "$arch" = aarch64 ]; }; }
 then
-    log "Error: This script is not intended to be run on $(tr '[:lower:]' '[:upper:]' <<< ${os:0:1})${os:1} $arch systems"
+    log "Error: This script is not intended to be run on ${os^} $arch systems"
     confirm_exit 1
 fi
 
