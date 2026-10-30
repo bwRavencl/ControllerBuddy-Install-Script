@@ -469,22 +469,18 @@ function remove_controller_buddy() {
     fi
 }
 
-function ensure_file_content() {
+function uinput_accessible() {
+    [ -r /dev/uinput ] && [ -w /dev/uinput ]
+}
+
+function queue_file_update() {
     local -r file="$1"
     local -r content="$2"
 
-    if [ ! -f "$file" ] || [ "$(cat "$file" 2>/dev/null)" != "$content" ]
+    if [ "$(cat "$file" 2>/dev/null)" != "$content" ]
     then
-        log "Initializing '$file'..."
-        check_sudo_privileges
-        echo "$content" | sudo tee "$file" >/dev/null
-        check_retval "Error: Failed to write $file"
-        reboot_required=true
+        pending_updates+=("$file" "$content")
     fi
-}
-
-function ensure_udev_rule() {
-    ensure_file_content /etc/udev/rules.d/60-controllerbuddy.rules 'KERNEL=="uinput", SUBSYSTEM=="misc", TAG+="uaccess", OPTIONS+="static_node=uinput"'
 }
 
 function create_shortcut() {
@@ -720,15 +716,43 @@ else
         fi
         echo
 
-        if [ -e /dev/uinput ]
+        if ! uinput_accessible
         then
-            if [ ! -r /dev/uinput ] || [ ! -w /dev/uinput ]
+            pending_updates=()
+
+            if [ ! -e /dev/uinput ]
             then
-                ensure_udev_rule
+                queue_file_update "$module_conf_file" uinput
             fi
-        else
-            ensure_file_content /etc/modules-load.d/controllerbuddy.conf uinput
-            ensure_udev_rule
+            queue_file_update "$udev_rules_file" 'KERNEL=="uinput", SUBSYSTEM=="misc", TAG+="uaccess", OPTIONS+="static_node=uinput"'
+
+            if [ "${#pending_updates[@]}" -gt 0 ]
+            then
+                log 'Configuring access to /dev/uinput...'
+                check_sudo_privileges
+                sudo sh -c '
+                    while [ "$#" -gt 0 ]
+                    do
+                        mkdir -p "$(dirname "$1")" &&
+                        printf "%s\n" "$2" > "$1" || exit 1
+                        shift 2
+                    done
+
+                    modprobe uinput &&
+                    udevadm control --reload &&
+                    udevadm trigger --action=add --subsystem-match=misc --sysname-match=uinput &&
+                    udevadm settle
+                ' sh "${pending_updates[@]}"
+                check_retval 'Error: Failed to configure access to /dev/uinput'
+
+                if ! uinput_accessible
+                then
+                    reboot_required=true
+                fi
+            else
+                log 'Warning: Cannot access /dev/uinput. Please reboot your system and make sure you are logged in to a local session.'
+                echo
+            fi
         fi
     fi
 
