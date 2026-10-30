@@ -551,6 +551,17 @@ function add_environment_variable() {
     check_retval "Error: Failed to add $name environment variable"
 }
 
+function remove_environment_variable() {
+    local -r name="$1"
+
+    if REG QUERY 'HKCU\Environment' //V "$name" >/dev/null 2>&1
+    then
+        log "Removing $name environment variable..."
+        REG DELETE 'HKCU\Environment' //F //V "$name"
+        check_retval "Error: Failed to remove $name environment variable"
+    fi
+}
+
 function install_dcs_integration() {
     local -r dcs_user_dir="$1"
 
@@ -595,30 +606,17 @@ function install_dcs_integration() {
             fi
         fi
 
-        if REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_EXECUTABLE >/dev/null 2>&1
+        if [ "$uninstall" != true ]
         then
-            if [ "$uninstall" = true ]
+            if ! REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_EXECUTABLE >/dev/null 2>&1
             then
-                log 'Removing CONTROLLER_BUDDY_EXECUTABLE environment variable...'
-                REG DELETE 'HKCU\Environment' //F //V CONTROLLER_BUDDY_EXECUTABLE
-                check_retval 'Error: Failed to remove CONTROLLER_BUDDY_EXECUTABLE environment variable'
+                add_environment_variable CONTROLLER_BUDDY_EXECUTABLE "$cb_exe_path"
             fi
-        elif [ "$uninstall" != true ]
-        then
-            add_environment_variable CONTROLLER_BUDDY_EXECUTABLE "$cb_exe_path"
-        fi
 
-        if REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_PROFILES_DIR >/dev/null 2>&1
-        then
-            if [ "$uninstall" = true ]
+            if ! REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_PROFILES_DIR >/dev/null 2>&1
             then
-                log 'Removing CONTROLLER_BUDDY_PROFILES_DIR environment variable...'
-                REG DELETE 'HKCU\Environment' //F //V CONTROLLER_BUDDY_PROFILES_DIR
-                check_retval 'Error: Failed to remove CONTROLLER_BUDDY_PROFILES_DIR environment variable'
+                add_environment_variable CONTROLLER_BUDDY_PROFILES_DIR "$cb_profiles_dir"
             fi
-        elif [ "$uninstall" != true ]
-        then
-            add_environment_variable CONTROLLER_BUDDY_PROFILES_DIR "$cb_profiles_dir"
         fi
     fi
 }
@@ -642,15 +640,12 @@ then
 
                 if [ "$os" = windows ]
                 then
-                    if REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS >/dev/null 2>&1
-                    then
-                        log 'Removing CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS environment variable...'
-                        REG DELETE 'HKCU\Environment' //F //V CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS
-                        check_retval 'Error: Failed to remove CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS environment variable'
-                    fi
+                    remove_environment_variable CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS
+                    remove_environment_variable CONTROLLER_BUDDY_EXECUTABLE
+                    remove_environment_variable CONTROLLER_BUDDY_PROFILES_DIR
 
-                    install_dcs_integration "$dcs_stable_user_dir" uninstall
-                    install_dcs_integration "$dcs_open_beta_user_dir" uninstall
+                    install_dcs_integration "$dcs_stable_user_dir"
+                    install_dcs_integration "$dcs_open_beta_user_dir"
                 elif [ "$os" = linux ]
                 then
                     if [ -f "$udev_rules_file" ]
