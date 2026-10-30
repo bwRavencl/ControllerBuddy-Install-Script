@@ -825,15 +825,7 @@ else
             else
                 mkdir -p "$cb_parent_dir" && tar xzf "$tmp_archive_file" -C "$cb_parent_dir"
             fi
-            # shellcheck disable=SC2181
-            if [ $? -eq 0 ]
-            then
-                log 'Done!'
-                echo
-            else
-                log 'Error: Failed to decompress archive'
-                confirm_exit 1
-            fi
+            check_retval 'Error: Failed to decompress archive'
         fi
     fi
 
