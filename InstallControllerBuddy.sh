@@ -180,7 +180,7 @@ check_retval() {
                         ;;
                     [Nn]* | '')
                         log 'Aborted!'
-                        exit 0
+                        exit 1
                         ;;
                     *)
                         log "Invalid input. Please answer with 'yes' or 'no'."
