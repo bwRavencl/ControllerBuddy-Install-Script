@@ -877,7 +877,7 @@ else
     cb_profiles_branch=$(cut -d '.' -f -2 <<< "$cb_installed_version")
     readonly cb_profiles_branch
 
-    if [ -d "$cb_profiles_dir" ]
+    if [ -d "$cb_profiles_dir/.git" ]
     then
         pull_profiles=true
         if ! git -C "$cb_profiles_dir" diff --quiet || ! git -C "$cb_profiles_dir" diff --cached --quiet
@@ -914,6 +914,10 @@ else
             git -C "$cb_profiles_dir" pull origin "$cb_profiles_branch" --rebase
             check_retval 'Error: Failed to pull ControllerBuddy-Profiles repository' false
         fi
+    elif [ -d "$cb_profiles_dir" ]
+    then
+        log "Error: '$cb_profiles_dir' exists but is not a Git repository. Please move or delete it and restart this script."
+        confirm_exit 1
     else
         log 'Cloning ControllerBuddy-Profiles repository...'
         git clone https://github.com/bwRavencl/ControllerBuddy-Profiles.git "$cb_profiles_dir" --branch "$cb_profiles_branch"
