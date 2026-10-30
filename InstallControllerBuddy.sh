@@ -803,7 +803,7 @@ else
 
             log "Downloading ControllerBuddy $cb_latest_version..."
             tmp_archive_file=$(mktemp -p "$tmp_dir" -q) &&
-            curl -o "$tmp_archive_file" -L "$archive_url"
+            curl -o "$tmp_archive_file" -fL "$archive_url"
             check_retval "Error: Failed to obtain ControllerBuddy $cb_latest_version from GitHub"
 
             verify_signature "$tmp_archive_file" "$archive_url.sig"
