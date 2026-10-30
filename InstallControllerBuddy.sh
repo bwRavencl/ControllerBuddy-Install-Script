@@ -17,59 +17,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '
 
-banner=$(
-cat << 'EOF'
-╔═════════════════════════════════════════════════════════════╗
-║ █▀▀ █▀█ █▀█ ▀█▀ █▀▄ █▀█ █   █   █▀▀ █▀▄ █▀▄ █ █ █▀▄ █▀▄ █ █ ║
-║ █   █ █ █ █  █  █▀▄ █ █ █   █   █▀▀ █▀▄ █▀▄ █ █ █ █ █ █  █  ║
-║ ▀▀▀ ▀▀▀ ▀ ▀  ▀  ▀ ▀ ▀▀▀ ▀▀▀ ▀▀▀ ▀▀▀ ▀ ▀ ▀▀  ▀▀▀ ▀▀  ▀▀   ▀  ║
-║             ▀█▀ █▀█ █▀▀ ▀█▀ █▀█ █   █   █▀▀ █▀▄             ║
-║              █  █ █ ▀▀█  █  █▀█ █   █   █▀▀ █▀▄             ║
-║             ▀▀▀ ▀ ▀ ▀▀▀  ▀  ▀ ▀ ▀▀▀ ▀▀▀ ▀▀▀ ▀ ▀             ║
-║                 © 2022-2026  Matteo Hausner                 ║
-╚═════════════════════════════════════════════════════════════╝
-EOF
-)
-readonly banner
-
-if command -v tput >/dev/null 2>&1 && [ "$(tput colors 2>/dev/null || echo 0)" -ge 256 ]
-then
-    start_color=72
-    end_color=75
-    diff=$(( end_color - start_color ))
-    total_lines=0
-    while IFS= read -r _
-    do
-        total_lines=$(( total_lines + 1 ))
-    done <<<"$banner"
-    interior_lines=$(( total_lines - 3 ))
-    current_line=0
-    while IFS= read -r line
-    do
-        current_line=$(( current_line + 1 ))
-        if [ "$current_line" -eq 1 ] || [ "$current_line" -eq "$(( total_lines - 1 ))" ] || [ "$current_line" -eq "$total_lines" ]
-        then
-            printf '%s\n' "$line"
-            continue
-        fi
-        pos=$(( current_line - 2 ))
-        if [ "$interior_lines" -gt 1 ]
-        then
-            step=$(( diff * pos / (interior_lines - 1) ))
-        else
-            step=0
-        fi
-        color_code=$(( start_color + step ))
-        first_char=${line:0:1}
-        last_char=${line: -1}
-        middle_part=${line:1:${#line}-2}
-        printf '%s\e[38;5;%dm%s\e[0m%s\n' "$first_char" "$color_code" "$middle_part" "$last_char"
-    done <<<"$banner"
-    printf '\n'
-else
-    printf '%s\n\n' "$banner"
-fi
-
 log() {
     local -r message="$1"
 
@@ -97,65 +44,6 @@ confirm_exit() {
     read -rp 'Press enter to exit'
     exit "$exit_code"
 }
-
-if [ -z "${BASH_SOURCE[0]}" ]
-then
-    log 'Error: Cannot determine script source'
-    confirm_exit 1
-fi
-
-script_name=$(basename "${BASH_SOURCE[0]}")
-readonly script_name
-
-case "$OSTYPE" in
-    cygwin | msys)
-        readonly os=windows
-        readonly log_file="$TMP\\InstallControllerBuddy.log"
-        readonly vjoy_desired_version='2.2.2.0'
-        readonly cb_parent_dir="$LOCALAPPDATA\\Programs"
-        readonly cb_dir="$cb_parent_dir\\ControllerBuddy"
-        readonly cb_bin_dir="$cb_dir"
-        readonly cb_exe=ControllerBuddy.exe
-        readonly cb_exe_path="$cb_bin_dir\\$cb_exe"
-        readonly modules_path="$cb_dir\\runtime\\lib\\modules"
-        readonly cb_profiles_dir="$USERPROFILE\\Documents\\ControllerBuddy-Profiles"
-        readonly cb_shortcuts_dir="$APPDATA\\Microsoft\\Windows\\Start Menu\\Programs\\ControllerBuddy"
-        readonly saved_games_dir="$USERPROFILE\\Saved Games"
-        readonly dcs_stable_user_dir="$saved_games_dir\\DCS"
-        readonly dcs_open_beta_user_dir="$saved_games_dir\\DCS.openbeta"
-        ;;
-    linux*)
-        readonly os=linux
-        readonly log_file="/tmp/InstallControllerBuddy.log"
-        readonly cb_parent_dir="$HOME"
-        readonly cb_dir="$cb_parent_dir/ControllerBuddy"
-        readonly cb_bin_dir="$cb_dir/bin"
-        readonly cb_lib_dir="$cb_dir/lib"
-        readonly cb_exe=ControllerBuddy
-        readonly cb_exe_path="$cb_bin_dir/$cb_exe"
-        readonly modules_path="$cb_dir/lib/runtime/lib/modules"
-        if command -v xdg-user-dir >/dev/null 2>&1
-        then
-            cb_profiles_dir="$(xdg-user-dir DOCUMENTS)/ControllerBuddy-Profiles"
-        else
-            cb_profiles_dir="$HOME/ControllerBuddy-Profiles"
-        fi
-        readonly cb_profiles_dir
-        readonly cb_shortcuts_dir="$HOME/.local/share/applications/ControllerBuddy"
-        readonly udev_rules_file=/etc/udev/rules.d/60-controllerbuddy.rules
-        readonly module_conf_file=/etc/modules-load.d/controllerbuddy.conf
-        ;;
-     *)
-        log 'Error: This script must either be run in a Git Bash for Windows or a GNU/Linux Bash environment.'
-        confirm_exit 1
-        ;;
-esac
-
-if [ -z "$CB_INSTALL_SCRIPT_RESTARTED" ]
-then
-    rm -f "$log_file"
-fi
-unset CB_INSTALL_SCRIPT_RESTARTED
 
 check_retval() {
     local -r retval=$?
@@ -196,23 +84,6 @@ check_retval() {
         esac
     done
 }
-
-log 'Determining system architecture...'
-arch=$(uname -m)
-check_retval 'Error: Failed to determine system architecture'
-readonly arch
-
-if ! { [ "$arch" = x86_64 ] || {  [ "$os" = linux ] && [ "$arch" = aarch64 ]; }; }
-then
-    log "Error: This script is not intended to be run on ${os^} $arch systems"
-    confirm_exit 1
-fi
-
-log 'Creating temporary directory...'
-tmp_dir=$(mktemp -d -q)
-check_retval 'Error: Failed to create temporary directory'
-readonly tmp_dir
-trap 'rm -rf "$tmp_dir"' EXIT
 
 check_sudo_privileges() {
     if [ "$has_sudo_privileges" = true ]
@@ -350,112 +221,6 @@ EOF
     check_retval 'Error: Bad signature'
 }
 
-readonly cmd_argument="$1"
-
-case "$cmd_argument" in
-    '')
-        ;;
-    skip-self-update)
-        skip_self_update=true
-        ;;
-    uninstall)
-        uninstall=true
-        ;;
-     *)
-        log "Error: Invalid command-line argument '$cmd_argument'"
-        exit 1
-        ;;
-esac
-
-if [ "$uninstall" != true ]
-then
-    if [ "$os" != windows ]
-    then
-        log 'Checking if cURL is installed...'
-        if command -v curl >/dev/null 2>&1
-        then
-            log 'Yes'
-        else
-            log 'No - installing cURL...'
-            install_package 'curl' 'curl' 'curl' 'curl'
-            check_retval 'Error: Failed to install cURL. Please restart this script after manually installing cURL.'
-        fi
-        echo
-    fi
-
-    if [ "$skip_self_update" != true ]
-    then
-        log 'Checking for the latest install script...'
-        if install_script_json=$(curl -fL https://api.github.com/repos/bwRavencl/ControllerBuddy-Install-Script/releases/latest) &&
-            tag_name=$(grep tag_name <<< "$install_script_json" | cut -d : -f 2 | tr -d \",' ') &&
-            install_script_url=https://github.com/bwRavencl/ControllerBuddy-Install-Script/releases/download/$tag_name/InstallControllerBuddy.sh &&
-            tmp_install_script_file=$(mktemp -p "$tmp_dir" -q) &&
-            curl -o "$tmp_install_script_file" -fL "$install_script_url"
-        then
-            if cmp -s "${BASH_SOURCE[0]}" "$tmp_install_script_file"
-            then
-                log 'Install script is already up-to-date!'
-                echo
-            else
-                log 'New install script available!'
-                echo
-                verify_signature "$tmp_install_script_file" "$install_script_url.sig"
-                log 'Updating and restarting install script...'
-                mv "$tmp_install_script_file" "${BASH_SOURCE[0]}" &&
-                chmod +x "${BASH_SOURCE[0]}"
-                check_retval 'Error: Failed to update install script'
-                rm -rf "$tmp_dir"
-                CB_INSTALL_SCRIPT_RESTARTED=1 exec bash "${BASH_SOURCE[0]}" skip-self-update
-            fi
-        else
-            log 'Warning: Failed to obtain latest install script from GitHub'
-            echo
-        fi
-    fi
-fi
-
-check_vjoy_installed() {
-    log "Checking if vJoy $vjoy_desired_version is installed..."
-    local -r vjoy_uninstall_registry_key='HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{8E31F76F-74C3-47F1-9550-E041EEDC5FBB}_is1'
-    vjoy_dir=$(REG QUERY "$vjoy_uninstall_registry_key" //V InstallLocation 2>/dev/null | grep InstallLocation | sed -n -e 's/^.*REG_SZ    //p' | sed 's/\\*$//')
-    vjoy_config_exe_path="$vjoy_dir\\x64\\vJoyConfig.exe"
-    vjoy_current_version=$(REG QUERY "$vjoy_uninstall_registry_key" //V DisplayVersion 2>/dev/null | grep DisplayVersion | sed -n -e 's/^.*REG_SZ    //p')
-    if [ -n "$vjoy_dir" ] &&
-        [ -d "$vjoy_dir" ] &&
-        [ -f "$vjoy_config_exe_path" ] &&
-        [ "$vjoy_current_version" = "$vjoy_desired_version" ]
-    then
-        vjoy_installed=true
-    fi
-}
-
-get_vjoy_config_value() {
-    local -r vjoy_config="$1"
-    local -r value_name="$2"
-
-    grep "$value_name" <<< "$vjoy_config" | cut -d : -f 2 | sed 's/^[ \t]*//;s/[ \t]*$//' | xargs
-}
-
-check_vjoy_configured() {
-    log 'Checking if vJoy is configured correctly...'
-    local -r vjoy_config=$("$vjoy_config_exe_path" -t 1)
-    local -r vjoy_config_device=$(get_vjoy_config_value "$vjoy_config" Device)
-    local -r vjoy_config_buttons=$(get_vjoy_config_value "$vjoy_config" Buttons)
-    local -r vjoy_config_descrete_povs=$(get_vjoy_config_value "$vjoy_config" 'Descrete POVs')
-    local -r vjoy_config_continuous_povs=$(get_vjoy_config_value "$vjoy_config" 'Continous POVs')
-    local -r vjoy_config_axes=$(get_vjoy_config_value "$vjoy_config" Axes)
-    local -r vjoy_config_ffb_effects=$(get_vjoy_config_value "$vjoy_config" 'FFB Effects')
-    if [ "$vjoy_config_device" = 1 ] &&
-        [ "$vjoy_config_buttons" = 128 ] &&
-        [ "$vjoy_config_descrete_povs" = 0 ] &&
-        [ "$vjoy_config_continuous_povs" = 0 ] &&
-        [ "$vjoy_config_axes" = 'X Y Z Rx Ry Rz Sl0 Sl1 - - - - - - - -' ] &&
-        [ "$vjoy_config_ffb_effects" = 'None' ]
-    then
-        vjoy_configured=true
-    fi
-}
-
 check_cb_installed_version() {
     if [ -f "$modules_path" ]
     then
@@ -503,20 +268,6 @@ remove_controller_buddy() {
     check_retval 'Error: Failed to remove ControllerBuddy'
 }
 
-uinput_accessible() {
-    [ -r /dev/uinput ] && [ -w /dev/uinput ]
-}
-
-queue_file_update() {
-    local -r file="$1"
-    local -r content="$2"
-
-    if [ "$(cat "$file" 2>/dev/null)" != "$content" ]
-    then
-        pending_updates+=("$file" "$content")
-    fi
-}
-
 create_shortcut() {
     local -r name="$1"
     local -r target="$2"
@@ -557,6 +308,48 @@ create_shortcut() {
         mkdir -p "$cb_shortcuts_dir" && echo -e "[Desktop Entry]\nType=Application\nName=$name\nIcon=$icon_value\nExec=$exec_value\nPath=$work_dir\nTerminal=$terminal_value\nCategories=Game" > "$shortcut_path"
     fi
     check_retval "Error: Failed to create '$name' shortcut"
+}
+
+check_vjoy_installed() {
+    log "Checking if vJoy $vjoy_desired_version is installed..."
+    local -r vjoy_uninstall_registry_key='HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{8E31F76F-74C3-47F1-9550-E041EEDC5FBB}_is1'
+    vjoy_dir=$(REG QUERY "$vjoy_uninstall_registry_key" //V InstallLocation 2>/dev/null | grep InstallLocation | sed -n -e 's/^.*REG_SZ    //p' | sed 's/\\*$//')
+    vjoy_config_exe_path="$vjoy_dir\\x64\\vJoyConfig.exe"
+    vjoy_current_version=$(REG QUERY "$vjoy_uninstall_registry_key" //V DisplayVersion 2>/dev/null | grep DisplayVersion | sed -n -e 's/^.*REG_SZ    //p')
+    if [ -n "$vjoy_dir" ] &&
+        [ -d "$vjoy_dir" ] &&
+        [ -f "$vjoy_config_exe_path" ] &&
+        [ "$vjoy_current_version" = "$vjoy_desired_version" ]
+    then
+        vjoy_installed=true
+    fi
+}
+
+get_vjoy_config_value() {
+    local -r vjoy_config="$1"
+    local -r value_name="$2"
+
+    grep "$value_name" <<< "$vjoy_config" | cut -d : -f 2 | sed 's/^[ \t]*//;s/[ \t]*$//' | xargs
+}
+
+check_vjoy_configured() {
+    log 'Checking if vJoy is configured correctly...'
+    local -r vjoy_config=$("$vjoy_config_exe_path" -t 1)
+    local -r vjoy_config_device=$(get_vjoy_config_value "$vjoy_config" Device)
+    local -r vjoy_config_buttons=$(get_vjoy_config_value "$vjoy_config" Buttons)
+    local -r vjoy_config_descrete_povs=$(get_vjoy_config_value "$vjoy_config" 'Descrete POVs')
+    local -r vjoy_config_continuous_povs=$(get_vjoy_config_value "$vjoy_config" 'Continous POVs')
+    local -r vjoy_config_axes=$(get_vjoy_config_value "$vjoy_config" Axes)
+    local -r vjoy_config_ffb_effects=$(get_vjoy_config_value "$vjoy_config" 'FFB Effects')
+    if [ "$vjoy_config_device" = 1 ] &&
+        [ "$vjoy_config_buttons" = 128 ] &&
+        [ "$vjoy_config_descrete_povs" = 0 ] &&
+        [ "$vjoy_config_continuous_povs" = 0 ] &&
+        [ "$vjoy_config_axes" = 'X Y Z Rx Ry Rz Sl0 Sl1 - - - - - - - -' ] &&
+        [ "$vjoy_config_ffb_effects" = 'None' ]
+    then
+        vjoy_configured=true
+    fi
 }
 
 add_environment_variable() {
@@ -641,6 +434,166 @@ install_dcs_integration() {
     fi
 }
 
+uinput_accessible() {
+    [ -r /dev/uinput ] && [ -w /dev/uinput ]
+}
+
+queue_file_update() {
+    local -r file="$1"
+    local -r content="$2"
+
+    if [ "$(cat "$file" 2>/dev/null)" != "$content" ]
+    then
+        pending_updates+=("$file" "$content")
+    fi
+}
+
+banner=$(
+cat << 'EOF'
+╔═════════════════════════════════════════════════════════════╗
+║ █▀▀ █▀█ █▀█ ▀█▀ █▀▄ █▀█ █   █   █▀▀ █▀▄ █▀▄ █ █ █▀▄ █▀▄ █ █ ║
+║ █   █ █ █ █  █  █▀▄ █ █ █   █   █▀▀ █▀▄ █▀▄ █ █ █ █ █ █  █  ║
+║ ▀▀▀ ▀▀▀ ▀ ▀  ▀  ▀ ▀ ▀▀▀ ▀▀▀ ▀▀▀ ▀▀▀ ▀ ▀ ▀▀  ▀▀▀ ▀▀  ▀▀   ▀  ║
+║             ▀█▀ █▀█ █▀▀ ▀█▀ █▀█ █   █   █▀▀ █▀▄             ║
+║              █  █ █ ▀▀█  █  █▀█ █   █   █▀▀ █▀▄             ║
+║             ▀▀▀ ▀ ▀ ▀▀▀  ▀  ▀ ▀ ▀▀▀ ▀▀▀ ▀▀▀ ▀ ▀             ║
+║                 © 2022-2026  Matteo Hausner                 ║
+╚═════════════════════════════════════════════════════════════╝
+EOF
+)
+readonly banner
+
+if command -v tput >/dev/null 2>&1 && [ "$(tput colors 2>/dev/null || echo 0)" -ge 256 ]
+then
+    start_color=72
+    end_color=75
+    diff=$(( end_color - start_color ))
+    total_lines=0
+    while IFS= read -r _
+    do
+        total_lines=$(( total_lines + 1 ))
+    done <<<"$banner"
+    interior_lines=$(( total_lines - 3 ))
+    current_line=0
+    while IFS= read -r line
+    do
+        current_line=$(( current_line + 1 ))
+        if [ "$current_line" -eq 1 ] || [ "$current_line" -eq "$(( total_lines - 1 ))" ] || [ "$current_line" -eq "$total_lines" ]
+        then
+            printf '%s\n' "$line"
+            continue
+        fi
+        pos=$(( current_line - 2 ))
+        if [ "$interior_lines" -gt 1 ]
+        then
+            step=$(( diff * pos / (interior_lines - 1) ))
+        else
+            step=0
+        fi
+        color_code=$(( start_color + step ))
+        first_char=${line:0:1}
+        last_char=${line: -1}
+        middle_part=${line:1:${#line}-2}
+        printf '%s\e[38;5;%dm%s\e[0m%s\n' "$first_char" "$color_code" "$middle_part" "$last_char"
+    done <<<"$banner"
+    printf '\n'
+else
+    printf '%s\n\n' "$banner"
+fi
+
+if [ -z "${BASH_SOURCE[0]}" ]
+then
+    log 'Error: Cannot determine script source'
+    confirm_exit 1
+fi
+
+script_name=$(basename "${BASH_SOURCE[0]}")
+readonly script_name
+
+case "$OSTYPE" in
+    cygwin | msys)
+        readonly os=windows
+        readonly log_file="$TMP\\InstallControllerBuddy.log"
+        readonly vjoy_desired_version='2.2.2.0'
+        readonly cb_parent_dir="$LOCALAPPDATA\\Programs"
+        readonly cb_dir="$cb_parent_dir\\ControllerBuddy"
+        readonly cb_bin_dir="$cb_dir"
+        readonly cb_exe=ControllerBuddy.exe
+        readonly cb_exe_path="$cb_bin_dir\\$cb_exe"
+        readonly modules_path="$cb_dir\\runtime\\lib\\modules"
+        readonly cb_profiles_dir="$USERPROFILE\\Documents\\ControllerBuddy-Profiles"
+        readonly cb_shortcuts_dir="$APPDATA\\Microsoft\\Windows\\Start Menu\\Programs\\ControllerBuddy"
+        readonly saved_games_dir="$USERPROFILE\\Saved Games"
+        readonly dcs_stable_user_dir="$saved_games_dir\\DCS"
+        readonly dcs_open_beta_user_dir="$saved_games_dir\\DCS.openbeta"
+        ;;
+    linux*)
+        readonly os=linux
+        readonly log_file="/tmp/InstallControllerBuddy.log"
+        readonly cb_parent_dir="$HOME"
+        readonly cb_dir="$cb_parent_dir/ControllerBuddy"
+        readonly cb_bin_dir="$cb_dir/bin"
+        readonly cb_lib_dir="$cb_dir/lib"
+        readonly cb_exe=ControllerBuddy
+        readonly cb_exe_path="$cb_bin_dir/$cb_exe"
+        readonly modules_path="$cb_dir/lib/runtime/lib/modules"
+        if command -v xdg-user-dir >/dev/null 2>&1
+        then
+            cb_profiles_dir="$(xdg-user-dir DOCUMENTS)/ControllerBuddy-Profiles"
+        else
+            cb_profiles_dir="$HOME/ControllerBuddy-Profiles"
+        fi
+        readonly cb_profiles_dir
+        readonly cb_shortcuts_dir="$HOME/.local/share/applications/ControllerBuddy"
+        readonly udev_rules_file=/etc/udev/rules.d/60-controllerbuddy.rules
+        readonly module_conf_file=/etc/modules-load.d/controllerbuddy.conf
+        ;;
+     *)
+        log 'Error: This script must either be run in a Git Bash for Windows or a GNU/Linux Bash environment.'
+        confirm_exit 1
+        ;;
+esac
+
+if [ -z "$CB_INSTALL_SCRIPT_RESTARTED" ]
+then
+    rm -f "$log_file"
+fi
+unset CB_INSTALL_SCRIPT_RESTARTED
+
+log 'Determining system architecture...'
+arch=$(uname -m)
+check_retval 'Error: Failed to determine system architecture'
+readonly arch
+
+if ! { [ "$arch" = x86_64 ] || {  [ "$os" = linux ] && [ "$arch" = aarch64 ]; }; }
+then
+    log "Error: This script is not intended to be run on ${os^} $arch systems"
+    confirm_exit 1
+fi
+
+log 'Creating temporary directory...'
+tmp_dir=$(mktemp -d -q)
+check_retval 'Error: Failed to create temporary directory'
+readonly tmp_dir
+trap 'rm -rf "$tmp_dir"' EXIT
+
+readonly cmd_argument="$1"
+
+case "$cmd_argument" in
+    '')
+        ;;
+    skip-self-update)
+        skip_self_update=true
+        ;;
+    uninstall)
+        uninstall=true
+        ;;
+     *)
+        log "Error: Invalid command-line argument '$cmd_argument'"
+        exit 1
+        ;;
+esac
+
 if [ "$uninstall" = true ]
 then
     while true
@@ -698,6 +651,50 @@ then
                 ;;
         esac
     done
+fi
+
+if [ "$os" != windows ]
+then
+    log 'Checking if cURL is installed...'
+    if command -v curl >/dev/null 2>&1
+    then
+        log 'Yes'
+    else
+        log 'No - installing cURL...'
+        install_package 'curl' 'curl' 'curl' 'curl'
+        check_retval 'Error: Failed to install cURL. Please restart this script after manually installing cURL.'
+    fi
+    echo
+fi
+
+if [ "$skip_self_update" != true ]
+then
+    log 'Checking for the latest install script...'
+    if install_script_json=$(curl -fL https://api.github.com/repos/bwRavencl/ControllerBuddy-Install-Script/releases/latest) &&
+        tag_name=$(grep tag_name <<< "$install_script_json" | cut -d : -f 2 | tr -d \",' ') &&
+        install_script_url=https://github.com/bwRavencl/ControllerBuddy-Install-Script/releases/download/$tag_name/InstallControllerBuddy.sh &&
+        tmp_install_script_file=$(mktemp -p "$tmp_dir" -q) &&
+        curl -o "$tmp_install_script_file" -fL "$install_script_url"
+    then
+        if cmp -s "${BASH_SOURCE[0]}" "$tmp_install_script_file"
+        then
+            log 'Install script is already up-to-date!'
+            echo
+        else
+            log 'New install script available!'
+            echo
+            verify_signature "$tmp_install_script_file" "$install_script_url.sig"
+            log 'Updating and restarting install script...'
+            mv "$tmp_install_script_file" "${BASH_SOURCE[0]}" &&
+            chmod +x "${BASH_SOURCE[0]}"
+            check_retval 'Error: Failed to update install script'
+            rm -rf "$tmp_dir"
+            CB_INSTALL_SCRIPT_RESTARTED=1 exec bash "${BASH_SOURCE[0]}" skip-self-update
+        fi
+    else
+        log 'Warning: Failed to obtain latest install script from GitHub'
+        echo
+    fi
 fi
 
 if [ "$os" = windows ]
