@@ -205,9 +205,11 @@ then
     confirm_exit 1
 fi
 
+log 'Creating temporary directory...'
 tmp_dir=$(mktemp -d -q)
+check_retval 'Error: Failed to create temporary directory'
 readonly tmp_dir
-trap 'rm -rf $tmp_dir' EXIT
+trap 'rm -rf "$tmp_dir"' EXIT
 
 check_sudo_privileges() {
     if [ "$has_sudo_privileges" != true ]
