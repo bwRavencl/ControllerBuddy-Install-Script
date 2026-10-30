@@ -582,8 +582,7 @@ install_dcs_integration() {
         local -r dcs_scripts_dir="$dcs_user_dir\\Scripts"
 
         local -r cb_dcs_integration_dir="$dcs_scripts_dir\\ControllerBuddy-DCS-Integration"
-        [[ -d "$cb_dcs_integration_dir" ]] && cb_dcs_integration_dir_exists=true || cb_dcs_integration_dir_exists=false
-        if [ "$cb_dcs_integration_dir_exists" = true ]
+        if [ -d "$cb_dcs_integration_dir" ]
         then
             if [ "$uninstall" = true ]
             then
@@ -868,9 +867,8 @@ else
 
     cb_profiles_branch=$(cut -d '.' -f -2 <<< "$cb_installed_version")
 
-    [[ -d "$cb_profiles_dir" ]] && cb_profiles_dir_exists=true || cb_profiles_dir_exists=false
 
-    if [ "$cb_profiles_dir_exists" = true ]
+    if [ -d "$cb_profiles_dir" ]
     then
         pull_profiles=true
         if ! git -C "$cb_profiles_dir" diff --quiet || ! git -C "$cb_profiles_dir" diff --cached --quiet
