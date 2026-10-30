@@ -457,7 +457,6 @@ check_cb_installed_version() {
     if [ -f "$modules_path" ]
     then
         cb_installed_version=$(grep -aoP -m 1 '(?<=ControllerBuddy )\d+\.\d+\.\d+-[a-z0-9]+' "$modules_path")
-        auto_exit=true
     fi
 }
 
@@ -785,7 +784,13 @@ else
     fi
 
     check_cb_installed_version
-    [ -n "$cb_installed_version" ] && cb_not_installed=false || cb_not_installed=true
+    if [ -n "$cb_installed_version" ]
+    then
+        cb_not_installed=false
+        auto_exit=true
+    else
+        cb_not_installed=true
+    fi
 
     log 'Checking for the latest ControllerBuddy release...'
     cb_json=$(curl -fL https://api.github.com/repos/bwRavencl/ControllerBuddy/releases/latest)
