@@ -169,7 +169,7 @@ check_retval() {
             confirm_exit 1
         else
             echo
-            while true;
+            while true
             do
                 read -rp 'Would you like to continue anyway? [y/N] ' response
                 case $response in
@@ -630,7 +630,7 @@ install_dcs_integration() {
 
 if [ "$uninstall" = true ]
 then
-    while true;
+    while true
     do
         read -rp 'Are you sure you want to uninstall ControllerBuddy? [y/N] ' response
         case $response in
@@ -926,7 +926,7 @@ else
             echo Note: Choosing 'always' will allow all scripts to run automatically whenever ControllerBuddy is updated, without further prompts.
             echo
 
-            while true;
+            while true
             do
                 read -rp 'Would you like to run the ControllerBuddy-Profiles configuration scripts? [yes/no/always/never] ' response
                 case $response in
@@ -960,7 +960,7 @@ else
             if [ \"\$CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS\" != true ]
             then
                 echo
-                while true;
+                while true
                 do
                     read -rp \"Would you like to run the configuration script for \$(dir=\${1%/*}; echo \"\${dir##*/}\" | tr _ ' ')? [yes/no] \" response
                     case \$response in
