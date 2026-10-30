@@ -826,10 +826,7 @@ else
 
             verify_signature "$tmp_archive_file" "$archive_url.sig"
 
-            if [ -d "$cb_dir" ]
-            then
-                remove_controller_buddy
-            fi
+            remove_controller_buddy
 
             log 'Decompressing archive...'
             if [ "$os" = windows ]
