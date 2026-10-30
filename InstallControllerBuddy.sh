@@ -960,7 +960,7 @@ else
         if [ "$run_config_scripts" = true ]
         then
             log 'Running ControllerBuddy-Profiles configuration scripts...'
-            config_scripts_output=$(find "$cb_profiles_dir/configs" -mindepth 2 -maxdepth 2 -name 'Configure.ps1' -exec sh -c "\
+            find "$cb_profiles_dir/configs" -mindepth 2 -maxdepth 2 -name 'Configure.ps1' -exec sh -c "\
             if [ \"\$CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS\" != true ]
             then
                 echo
@@ -983,11 +983,7 @@ else
             fi
             echo
             powershell -NoProfile -ExecutionPolicy Bypass -File \"\$1\"\
-            " shell {} \;)
-            if [ -n "$config_scripts_output" ]
-            then
-                log "$config_scripts_output"
-            fi
+            " shell {} \; | tee -a "$log_file"
             log 'Done!'
         fi
         echo
