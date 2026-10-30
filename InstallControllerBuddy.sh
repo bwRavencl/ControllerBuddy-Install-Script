@@ -196,8 +196,8 @@ function check_retval() {
 
 log 'Determining system architecture...'
 arch=$(uname -m)
-readonly arch
 check_retval 'Error: Failed to determine system architecture'
+readonly arch
 
 if ! { [ "$arch" = x86_64 ] || {  [ "$os" = linux ] && [ "$arch" = aarch64 ]; }; }
 then
