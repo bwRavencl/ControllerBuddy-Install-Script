@@ -168,7 +168,7 @@ check_retval() {
         echo
     else
         log "$error_message"
-        if [ "$exit_on_error" = "true" ]
+        if [ "$exit_on_error" = true ]
         then
             confirm_exit 1
         else
@@ -997,7 +997,7 @@ else
         log 'Launching ControllerBuddy...'
         if [ "$os" = windows ]
         then
-            start //B "" "$cb_exe_path" '-autostart' 'local' '-tray' &
+            start //B "" "$cb_exe_path" -autostart local -tray
         else
             nohup "$cb_exe_path" -autostart local -tray >/dev/null 2>&1 &
         fi
