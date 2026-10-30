@@ -358,7 +358,7 @@ case "$cmd_argument" in
         ;;
 esac
 
-if [ "$skip_self_update" != true ] && [ "$uninstall" != true ]
+if [ "$uninstall" != true ]
 then
     if [ "$os" != windows ]
     then
@@ -374,31 +374,34 @@ then
         echo
     fi
 
-    log 'Checking for the latest install script...'
-    if install_script_json=$(curl -fL https://api.github.com/repos/bwRavencl/ControllerBuddy-Install-Script/releases/latest) &&
-        tag_name=$(grep tag_name <<< "$install_script_json" | cut -d : -f 2 | tr -d \",' ') &&
-        install_script_url=https://github.com/bwRavencl/ControllerBuddy-Install-Script/releases/download/$tag_name/InstallControllerBuddy.sh &&
-        tmp_install_script_file=$(mktemp -p "$tmp_dir" -q) &&
-        curl -o "$tmp_install_script_file" -fL "$install_script_url"
+    if [ "$skip_self_update" != true ]
     then
-        if cmp -s "${BASH_SOURCE[0]}" "$tmp_install_script_file"
+        log 'Checking for the latest install script...'
+        if install_script_json=$(curl -fL https://api.github.com/repos/bwRavencl/ControllerBuddy-Install-Script/releases/latest) &&
+            tag_name=$(grep tag_name <<< "$install_script_json" | cut -d : -f 2 | tr -d \",' ') &&
+            install_script_url=https://github.com/bwRavencl/ControllerBuddy-Install-Script/releases/download/$tag_name/InstallControllerBuddy.sh &&
+            tmp_install_script_file=$(mktemp -p "$tmp_dir" -q) &&
+            curl -o "$tmp_install_script_file" -fL "$install_script_url"
         then
-            log 'Install script is already up-to-date!'
-            echo
+            if cmp -s "${BASH_SOURCE[0]}" "$tmp_install_script_file"
+            then
+                log 'Install script is already up-to-date!'
+                echo
+            else
+                log 'New install script available!'
+                echo
+                verify_signature "$tmp_install_script_file" "$install_script_url.sig"
+                log 'Updating and restarting install script...'
+                mv "$tmp_install_script_file" "${BASH_SOURCE[0]}" &&
+                chmod +x "${BASH_SOURCE[0]}"
+                check_retval 'Error: Failed to update install script'
+                rm -rf "$tmp_dir"
+                exec bash "${BASH_SOURCE[0]}" skip-self-update
+            fi
         else
-            log 'New install script available!'
+            log 'Warning: Failed to obtain latest install script from GitHub'
             echo
-            verify_signature "$tmp_install_script_file" "$install_script_url.sig"
-            log 'Updating and restarting install script...'
-            mv "$tmp_install_script_file" "${BASH_SOURCE[0]}" &&
-            chmod +x "${BASH_SOURCE[0]}"
-            check_retval 'Error: Failed to update install script'
-            rm -rf "$tmp_dir"
-            exec bash "${BASH_SOURCE[0]}" skip-self-update
         fi
-    else
-        log 'Warning: Failed to obtain latest install script from GitHub'
-        echo
     fi
 fi
 
