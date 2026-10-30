@@ -934,6 +934,10 @@ then
     if reg_query_output=$(REG QUERY 'HKCU\Environment' //V CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS 2>/dev/null)
     then
         run_config_scripts=$(echo "$reg_query_output" | awk '{print tolower($3)}' | xargs)
+        if [ "$run_config_scripts" = true ]
+        then
+            export CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS=true
+        fi
     fi
 
     if [ "$run_config_scripts" != true ] && [ "$run_config_scripts" != false ]
