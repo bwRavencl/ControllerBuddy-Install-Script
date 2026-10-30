@@ -232,7 +232,7 @@ check_sudo_privileges() {
 
 install_package() {
     local -r apt_package="$1"
-    local -r yum_package="$2"
+    local -r rpm_package="$2"
     local -r pacman_package="$3"
     local -r zypper_package="$4"
 
@@ -240,10 +240,14 @@ install_package() {
     then
         check_sudo_privileges
         sudo -- sh -c "apt-get update && apt-get install -y $apt_package"
+    elif command -v dnf >/dev/null 2>&1
+    then
+        check_sudo_privileges
+        sudo dnf -y install "$rpm_package"
     elif command -v yum >/dev/null 2>&1
     then
         check_sudo_privileges
-        sudo yum -y install "$yum_package"
+        sudo yum -y install "$rpm_package"
     elif command -v pacman >/dev/null 2>&1
     then
         check_sudo_privileges
