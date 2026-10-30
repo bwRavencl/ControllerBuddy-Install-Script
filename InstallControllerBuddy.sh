@@ -388,9 +388,11 @@ then
             echo
             verify_signature "$tmp_install_script_file" "$install_script_url.sig"
             log 'Updating and restarting install script...'
-            bash -c "mv '$tmp_install_script_file' '${BASH_SOURCE[0]}' && chmod +x '${BASH_SOURCE[0]}' && exec '${BASH_SOURCE[0]}' $cmd_argument"
-            check_retval 'Error: Failed to update and restart install script'
-            exit 0
+            mv "$tmp_install_script_file" "${BASH_SOURCE[0]}" &&
+            chmod +x "${BASH_SOURCE[0]}"
+            check_retval 'Error: Failed to update install script'
+            rm -rf "$tmp_dir"
+            exec bash "${BASH_SOURCE[0]}" skip-self-update
         fi
     else
         log 'Warning: Failed to obtain latest install script from GitHub'
