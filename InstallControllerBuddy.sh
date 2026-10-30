@@ -72,7 +72,7 @@ else
     printf '%s\n\n' "$banner"
 fi
 
-function log() {
+log() {
     local -r message="$1"
 
     local target_fd=1
@@ -88,7 +88,7 @@ function log() {
     fi
 }
 
-function confirm_exit() {
+confirm_exit() {
     local -r exit_code="$1"
 
     echo
@@ -155,7 +155,7 @@ esac
 
 rm -f "$log_file"
 
-function check_retval() {
+check_retval() {
     local -r retval=$?
     local -r error_message="$1"
     local -r exit_on_error="${2:-true}"
@@ -209,7 +209,7 @@ tmp_dir=$(mktemp -d -q)
 readonly tmp_dir
 trap 'rm -rf $tmp_dir' EXIT
 
-function check_sudo_privileges() {
+check_sudo_privileges() {
     if [ "$has_sudo_privileges" != true ]
     then
         if ! command -v sudo >/dev/null 2>&1
@@ -228,7 +228,7 @@ function check_sudo_privileges() {
     fi
 }
 
-function install_package() {
+install_package() {
     local -r apt_package="$1"
     local -r yum_package="$2"
     local -r pacman_package="$3"
@@ -255,7 +255,7 @@ function install_package() {
     fi
 }
 
-function verify_signature() {
+verify_signature() {
     local -r file="$1"
     local -r signature_url="$2"
 
@@ -400,7 +400,7 @@ then
     fi
 fi
 
-function check_vjoy_installed() {
+check_vjoy_installed() {
     log "Checking if vJoy $vjoy_desired_version is installed..."
     local -r vjoy_uninstall_registry_key='HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{8E31F76F-74C3-47F1-9550-E041EEDC5FBB}_is1'
     vjoy_dir=$(REG QUERY "$vjoy_uninstall_registry_key" //V InstallLocation 2>/dev/null | grep InstallLocation | sed -n -e 's/^.*REG_SZ    //p' | sed 's/\\*$//')
@@ -415,14 +415,14 @@ function check_vjoy_installed() {
     fi
 }
 
-function get_vjoy_config_value() {
+get_vjoy_config_value() {
     local -r vjoy_config="$1"
     local -r value_name="$2"
 
     grep "$value_name" <<< "$vjoy_config" | cut -d : -f 2 | sed 's/^[ \t]*//;s/[ \t]*$//' | xargs
 }
 
-function check_vjoy_configured() {
+check_vjoy_configured() {
     log 'Checking if vJoy is configured correctly...'
     local -r vjoy_config=$("$vjoy_config_exe_path" -t 1)
     local -r vjoy_config_device=$(get_vjoy_config_value "$vjoy_config" Device)
@@ -442,7 +442,7 @@ function check_vjoy_configured() {
     fi
 }
 
-function check_cb_installed_version {
+check_cb_installed_version() {
     if [ -f "$modules_path" ]
     then
         cb_installed_version=$(grep -aoP -m 1 '(?<=ControllerBuddy )\d+\.\d+\.\d+-[a-z0-9]+' "$modules_path")
@@ -450,7 +450,7 @@ function check_cb_installed_version {
     fi
 }
 
-function remove_controller_buddy() {
+remove_controller_buddy() {
     if [ -d "$cb_dir" ]
     then
         if [ "$os" = windows ]
@@ -488,11 +488,11 @@ function remove_controller_buddy() {
     fi
 }
 
-function uinput_accessible() {
+uinput_accessible() {
     [ -r /dev/uinput ] && [ -w /dev/uinput ]
 }
 
-function queue_file_update() {
+queue_file_update() {
     local -r file="$1"
     local -r content="$2"
 
@@ -502,7 +502,7 @@ function queue_file_update() {
     fi
 }
 
-function create_shortcut() {
+create_shortcut() {
     local -r name="$1"
     local -r target="$2"
     local -r arguments="$3"
@@ -542,7 +542,7 @@ function create_shortcut() {
     fi
 }
 
-function add_environment_variable() {
+add_environment_variable() {
     local -r name="$1"
     local -r value="$2"
 
@@ -551,7 +551,7 @@ function add_environment_variable() {
     check_retval "Error: Failed to add $name environment variable"
 }
 
-function remove_environment_variable() {
+remove_environment_variable() {
     local -r name="$1"
 
     if REG QUERY 'HKCU\Environment' //V "$name" >/dev/null 2>&1
@@ -562,7 +562,7 @@ function remove_environment_variable() {
     fi
 }
 
-function install_dcs_integration() {
+install_dcs_integration() {
     local -r dcs_user_dir="$1"
 
     if [ -d "$dcs_user_dir" ]
