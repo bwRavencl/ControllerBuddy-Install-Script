@@ -834,7 +834,7 @@ else
             log 'Decompressing archive...'
             if [ "$os" = windows ]
             then
-                mkdir -p "$cb_parent_dir" && unzip -d "$cb_parent_dir" "$tmp_archive_file"
+                mkdir -p "$cb_parent_dir" && unzip -o -d "$cb_parent_dir" "$tmp_archive_file"
             else
                 mkdir -p "$cb_parent_dir" && tar xzf "$tmp_archive_file" -C "$cb_parent_dir"
             fi
