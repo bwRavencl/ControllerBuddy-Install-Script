@@ -656,8 +656,7 @@ then
 
                     install_dcs_integration "$dcs_stable_user_dir"
                     install_dcs_integration "$dcs_open_beta_user_dir"
-                elif [ "$os" = linux ]
-                then
+                else
                     if [ -f "$udev_rules_file" ]
                     then
                         log 'Removing udev rules file...'
@@ -795,6 +794,7 @@ else
         log 'Skipping ControllerBuddy update due to missing release information'
     else
         cb_latest_version=$(grep tag_name <<< "$cb_json" | cut -d : -f 2 | tr -d \",' ')
+        readonly cb_latest_version
         if [ -z "$cb_latest_version" ]
         then
             log 'Error: Failed to determine latest ControllerBuddy version'
@@ -808,6 +808,7 @@ else
         else
             log 'Determining download URL...'
             archive_url=$(grep browser_download_url <<< "$cb_json" | grep "$os-${arch//_/-}" | grep -v .sig | cut -d : -f 2,3 | tr -d \",' ')
+            readonly archive_url
             [ -n "$archive_url" ]
             check_retval "Error: Failed to determine download URL for $cb_latest_version"
 
@@ -855,6 +856,7 @@ else
         update_arguments="bash \"${script_path//%/%%}\""
         script_work_dir=/tmp
     fi
+    readonly script_command update_arguments script_work_dir
     create_shortcut 'Update ControllerBuddy' "$script_command" "$update_arguments" "$script_work_dir"
     create_shortcut 'Uninstall ControllerBuddy' "$script_command" "${update_arguments:+$update_arguments }uninstall" "$script_work_dir"
 
@@ -866,7 +868,7 @@ else
     fi
 
     cb_profiles_branch=$(cut -d '.' -f -2 <<< "$cb_installed_version")
-
+    readonly cb_profiles_branch
 
     if [ -d "$cb_profiles_dir" ]
     then
