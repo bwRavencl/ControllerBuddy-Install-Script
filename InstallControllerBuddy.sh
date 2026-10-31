@@ -282,11 +282,6 @@ create_shortcut() {
         local -r shortcut_path="$cb_shortcuts_dir/$name.desktop"
     fi
 
-    if [ -f "$shortcut_path" ]
-    then
-        return 0
-    fi
-
     log "Creating '$name' shortcut..."
     if [ "$os" = windows ]
     then
@@ -306,7 +301,15 @@ create_shortcut() {
             local -r icon_value='text-x-script'
             local -r terminal_value=true
         fi
-        mkdir -p "$cb_shortcuts_dir" && echo -e "[Desktop Entry]\nType=Application\nName=$name\nIcon=$icon_value\nExec=$exec_value\nPath=$work_dir\nTerminal=$terminal_value\nCategories=Game" > "$shortcut_path"
+        mkdir -p "$cb_shortcuts_dir" && printf '%s\n' \
+            '[Desktop Entry]' \
+            'Type=Application' \
+            "Name=$name" \
+            "Icon=$icon_value" \
+            "Exec=$exec_value" \
+            "Path=$work_dir" \
+            "Terminal=$terminal_value" \
+            'Categories=Game' > "$shortcut_path"
     fi
     check_retval "Error: Failed to create '$name' shortcut"
 }
