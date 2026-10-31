@@ -531,7 +531,8 @@ case "$OSTYPE" in
     linux*)
         readonly os=linux
         readonly log_file="/tmp/InstallControllerBuddy.log"
-        readonly cb_parent_dir="$HOME"
+        readonly data_home_dir="${XDG_DATA_HOME:-$HOME/.local/share}"
+        readonly cb_parent_dir="$data_home_dir"
         readonly cb_dir="$cb_parent_dir/ControllerBuddy"
         readonly cb_bin_dir="$cb_dir/bin"
         readonly cb_lib_dir="$cb_dir/lib"
@@ -545,7 +546,7 @@ case "$OSTYPE" in
             cb_profiles_dir="$HOME/ControllerBuddy-Profiles"
         fi
         readonly cb_profiles_dir
-        readonly cb_shortcuts_dir="$HOME/.local/share/applications/ControllerBuddy"
+        readonly cb_shortcuts_dir="$data_home_dir/applications/ControllerBuddy"
         readonly udev_rules_file=/etc/udev/rules.d/60-controllerbuddy.rules
         readonly module_conf_file=/etc/modules-load.d/controllerbuddy.conf
         ;;
