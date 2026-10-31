@@ -876,6 +876,23 @@ readonly script_command update_arguments script_work_dir
 create_shortcut 'Update ControllerBuddy' "$script_command" "$update_arguments" "$script_work_dir"
 create_shortcut 'Uninstall ControllerBuddy' "$script_command" "${update_arguments:+$update_arguments }uninstall" "$script_work_dir"
 
+if [ "$os" = linux ]
+then
+    if command -v xdg-desktop-menu >/dev/null 2>&1
+    then
+        xdg-desktop-menu forceupdate >/dev/null 2>&1
+    fi
+
+    for kbuildsycoca in kbuildsycoca6 kbuildsycoca5
+    do
+        if command -v "$kbuildsycoca" >/dev/null 2>&1
+        then
+            "$kbuildsycoca" >/dev/null 2>&1
+            break
+        fi
+    done
+fi
+
 check_cb_installed_version
 if [ -z "$cb_installed_version" ]
 then
