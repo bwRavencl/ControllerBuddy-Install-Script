@@ -79,27 +79,13 @@ jobs:
             tag_name+='.dirty'
           fi
           echo "tag_name=$tag_name" >> "$GITHUB_OUTPUT"
-      - name: Import GPG Key
-        id: import-gpg
-        uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7
-        with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.GPG_PRIVATE_KEY_PASSPHRASE }}
       - name: Sign Script
         id: sign-script
-        env:
-          GPG_KEY_ID: ${{ steps.import-gpg.outputs.fingerprint }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PRIVATE_KEY_PASSPHRASE }}
-        run: |
-          signature_file="$INSTALL_SCRIPT_FILE.sig"
-          gpg --batch --yes \
-            --local-user "$GPG_KEY_ID" \
-            --pinentry-mode loopback \
-            --passphrase-fd 0 \
-            --detach-sig \
-            --output "$signature_file" \
-            "$INSTALL_SCRIPT_FILE" <<< "$GPG_PASSPHRASE"
-          echo "signature_file=$signature_file" >> "$GITHUB_OUTPUT"
+        uses: bwRavencl/ControllerBuddy/.github/actions/sign-files@b9752d3350e600afa83318e72585c62841c7c20c
+        with:
+          files: ${{ env.INSTALL_SCRIPT_FILE }}
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PRIVATE_KEY_PASSPHRASE }}
       - name: Release
         uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3
         with:
@@ -111,4 +97,4 @@ jobs:
           fail_on_unmatched_files: true
           files: |
             ${{ env.INSTALL_SCRIPT_FILE }}
-            ${{ steps.sign-script.outputs.signature_file }}
+            ${{ steps.sign-script.outputs.signature-files }}
