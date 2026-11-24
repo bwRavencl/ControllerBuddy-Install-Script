@@ -21,7 +21,7 @@ log() {
     local -r message="$1"
 
     local target_fd=1
-    if [[ "$message" == [eE]rror* ]]
+    if [[ $message == [eE]rror* ]]
     then
         target_fd=2
     fi
@@ -147,10 +147,10 @@ verify_signature() {
         log 'Checking if GnuPG is installed...'
         if command -v gpg >/dev/null 2>&1
         then
-            log 'Yes'
+            log Yes
         else
             log 'No - installing GnuPG...'
-            install_package 'gnupg' 'gnupg2' 'gnupg' 'gpg2'
+            install_package gnupg gnupg2 gnupg gpg2
             check_retval 'Error: Failed to install GnuPG. Please restart this script after manually installing GnuPG.'
         fi
         echo
@@ -242,10 +242,10 @@ remove_controller_buddy() {
         log 'Checking if killall is installed...'
         if command -v killall >/dev/null 2>&1
         then
-            log 'Yes'
+            log Yes
         else
             log 'No - installing psmisc...'
-            install_package 'psmisc' 'psmisc' 'psmisc' 'psmisc'
+            install_package psmisc psmisc psmisc psmisc
             check_retval 'Error: Failed to install psmisc. Please restart this script after manually installing psmisc.'
         fi
         echo
@@ -298,18 +298,18 @@ create_shortcut() {
             local -r icon_value="$cb_lib_dir/ControllerBuddy.png"
             local -r terminal_value=false
         else
-            local -r icon_value='text-x-script'
+            local -r icon_value=text-x-script
             local -r terminal_value=true
         fi
         mkdir -p "$cb_shortcuts_dir" && printf '%s\n' \
             '[Desktop Entry]' \
-            'Type=Application' \
+            Type=Application \
             "Name=$name" \
             "Icon=$icon_value" \
             "Exec=$exec_value" \
             "Path=$work_dir" \
             "Terminal=$terminal_value" \
-            'Categories=Game' > "$shortcut_path"
+            Categories=Game > "$shortcut_path"
     fi
     check_retval "Error: Failed to create '$name' shortcut"
 }
@@ -350,7 +350,7 @@ check_vjoy_configured() {
         [ "$vjoy_config_descrete_povs" = 0 ] &&
         [ "$vjoy_config_continuous_povs" = 0 ] &&
         [ "$vjoy_config_axes" = 'X Y Z Rx Ry Rz Sl0 Sl1 - - - - - - - -' ] &&
-        [ "$vjoy_config_ffb_effects" = 'None' ]
+        [ "$vjoy_config_ffb_effects" = None ]
     then
         vjoy_configured=true
     fi
@@ -514,7 +514,7 @@ fi
 script_name=$(basename "${BASH_SOURCE[0]}")
 readonly script_name
 
-case "$OSTYPE" in
+case $OSTYPE in
     cygwin | msys)
         readonly os=windows
         readonly log_file="$TMP\\InstallControllerBuddy.log"
@@ -533,7 +533,7 @@ case "$OSTYPE" in
         ;;
     linux*)
         readonly os=linux
-        readonly log_file="/tmp/InstallControllerBuddy.log"
+        readonly log_file=/tmp/InstallControllerBuddy.log
         readonly data_home_dir="${XDG_DATA_HOME:-$HOME/.local/share}"
         readonly cb_parent_dir="$data_home_dir"
         readonly cb_dir="$cb_parent_dir/ControllerBuddy"
@@ -584,7 +584,7 @@ trap 'rm -rf "$tmp_dir"' EXIT
 
 readonly cmd_argument="$1"
 
-case "$cmd_argument" in
+case $cmd_argument in
     '')
         ;;
     skip-self-update)
@@ -663,10 +663,10 @@ then
     log 'Checking if cURL is installed...'
     if command -v curl >/dev/null 2>&1
     then
-        log 'Yes'
+        log Yes
     else
         log 'No - installing cURL...'
-        install_package 'curl' 'curl' 'curl' 'curl'
+        install_package curl curl curl curl
         check_retval 'Error: Failed to install cURL. Please restart this script after manually installing cURL.'
     fi
     echo
@@ -731,7 +731,7 @@ then
     check_vjoy_configured
     if [ "$vjoy_configured" = true ]
     then
-        log 'Yes'
+        log Yes
     else
         log 'No - starting elevated vJoyConfig process...'
         powershell -NoProfile -Command "Start-Process '$vjoy_config_exe_path' '1 -f -a x y z rx ry rz sl0 sl1 -b 128 -p 0 -s 0 -e' -Verb Runas -Wait"
@@ -747,10 +747,10 @@ else
     log 'Checking if Git is installed...'
     if command -v git >/dev/null 2>&1
     then
-        log 'Yes'
+        log Yes
     else
         log 'No - installing Git...'
-        install_package 'git' 'git' 'git' 'git'
+        install_package git git git git
         check_retval 'Error: Failed to install Git. Please restart this script after manually installing Git.'
     fi
     echo
@@ -900,7 +900,7 @@ then
     confirm_exit 1
 fi
 
-cb_profiles_branch=$(cut -d '.' -f -2 <<< "$cb_installed_version")
+cb_profiles_branch=$(cut -d . -f -2 <<< "$cb_installed_version")
 readonly cb_profiles_branch
 
 if [ -d "$cb_profiles_dir/.git" ]
@@ -964,7 +964,7 @@ then
     if [ "$run_config_scripts" != true ] && [ "$run_config_scripts" != false ]
     then
         echo The ControllerBuddy-Profiles configuration scripts can automatically adjust the input settings of the following applications for use with the official profiles:
-        find "$cb_profiles_dir/configs" -mindepth 2 -maxdepth 2 -name 'Configure.ps1' -printf '%h\n' | sed 's#.*/##' | tr _ ' ' | xargs -I name echo - name
+        find "$cb_profiles_dir/configs" -mindepth 2 -maxdepth 2 -name Configure.ps1 -printf '%h\n' | sed 's#.*/##' | tr _ ' ' | xargs -I name echo - name
         echo
         echo If you intend to use the official profiles, it is recommended to allow the scripts to apply the required changes.
         echo Warning: To avoid losing your current input configurations, back them up before running the scripts.
@@ -1001,7 +1001,7 @@ then
     if [ "$run_config_scripts" = true ]
     then
         log 'Running ControllerBuddy-Profiles configuration scripts...'
-        find "$cb_profiles_dir/configs" -mindepth 2 -maxdepth 2 -name 'Configure.ps1' -exec sh -c "\
+        find "$cb_profiles_dir/configs" -mindepth 2 -maxdepth 2 -name Configure.ps1 -exec sh -c "\
         if [ \"\$CONTROLLER_BUDDY_RUN_CONFIG_SCRIPTS\" != true ]
         then
             echo
