@@ -81,7 +81,7 @@ jobs:
           echo "tag_name=$tag_name" >> "$GITHUB_OUTPUT"
       - name: Sign Script
         id: sign-script
-        uses: bwRavencl/ControllerBuddy/.github/actions/sign-files@b9752d3350e600afa83318e72585c62841c7c20c
+        uses: bwRavencl/ControllerBuddy/.github/actions/sign-files@5f059f048240fd0937475dd06335f3740f833933
         with:
           files: ${{ env.INSTALL_SCRIPT_FILE }}
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
